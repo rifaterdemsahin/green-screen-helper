@@ -12,18 +12,28 @@
         <video id="video" autoplay playsinline></video>
         <canvas id="canvas"></canvas>
     </div>
-    <div class="controls">
-        <button id="start-button">Start Camera</button>
-        <button id="stop-button">Stop Camera</button>
-        <button id="set-green-button">Set to Green</button>
-        <button id="set-blue-button">Set to Blue</button>
-        <div class="tolerance-container">
-            <label for="tolerance">Tolerance:</label>
-            <input type="range" id="tolerance" min="0" max="200" value="50">
-            <span id="tolerance-value">50</span>
+    <div class="controls-wrapper">
+        <div class="control-group">
+            <h3>Camera</h3>
+            <button id="start-button">Start Camera</button>
+            <button id="stop-button">Stop Camera</button>
         </div>
-        <a href="shooting-guide.html" class="guide-link">Shooting Guide</a>
-        <a href="camera-guide.html" class="guide-link">Camera Guide</a>
+        <div class="control-group">
+            <h3>Chroma Key</h3>
+            <button id="toggle-chroma-button">Toggle Chroma</button>
+            <button id="set-green-button">Set to Green</button>
+            <button id="set-blue-button">Set to Blue</button>
+            <div class="tolerance-container">
+                <label for="tolerance">Tolerance:</label>
+                <input type="range" id="tolerance" min="0" max="200" value="50">
+                <span id="tolerance-value">50</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <h3>Guides</h3>
+            <a href="shooting-guide.html" class="guide-link">Shooting Guide</a>
+            <a href="camera-guide.html" class="guide-link">Camera Guide</a>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
