@@ -58,3 +58,19 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+
+.guide-link {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    margin: 0 10px;
+    text-decoration: none;
+}
+
+.guide-link:hover {
+    background-color: #0056b3;
+}
