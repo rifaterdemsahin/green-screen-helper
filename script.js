@@ -6,6 +6,7 @@ const stopButton = document.getElementById('stop-button');
 const fullscreenButton = document.getElementById('fullscreen-button');
 const toggleChromaButton = document.getElementById('toggle-chroma-button');
 const goldenRatioButton = document.getElementById('golden-ratio-button');
+const gridLinesButton = document.getElementById('grid-lines-button');
 const pickColorButton = document.getElementById('pick-color-button');
 const setGreenButton = document.getElementById('set-green-button');
 const setBlueButton = document.getElementById('set-blue-button');
@@ -18,6 +19,7 @@ let keyColor = { r: 0, g: 177, b: 64 }; // Default to a standard green screen gr
 let tolerance = 50;
 let chromaKeyEnabled = true;
 let goldenRatioEnabled = false;
+let gridLinesEnabled = false;
 let colorPicking = false;
 
 startButton.addEventListener('click', startCamera);
@@ -33,6 +35,11 @@ toggleChromaButton.addEventListener('click', () => {
 goldenRatioButton.addEventListener('click', () => {
     goldenRatioEnabled = !goldenRatioEnabled;
     goldenRatioButton.classList.toggle('active', goldenRatioEnabled);
+});
+
+gridLinesButton.addEventListener('click', () => {
+    gridLinesEnabled = !gridLinesEnabled;
+    gridLinesButton.classList.toggle('active', gridLinesEnabled);
 });
 
 pickColorButton.addEventListener('click', () => {
@@ -128,6 +135,10 @@ function analyzeFrame() {
         drawGoldenRatio();
     }
 
+    if (gridLinesEnabled) {
+        drawGridLines();
+    }
+
     requestAnimationFrame(analyzeFrame);
 }
 
@@ -154,6 +165,29 @@ function drawGoldenRatio() {
         x = newX;
         y = newY;
     }
+
+    context.stroke();
+}
+
+function drawGridLines() {
+    const w = canvas.width;
+    const h = canvas.height;
+
+    context.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+    context.lineWidth = 1;
+    context.beginPath();
+
+    // Vertical lines
+    context.moveTo(w / 3, 0);
+    context.lineTo(w / 3, h);
+    context.moveTo(w * 2 / 3, 0);
+    context.lineTo(w * 2 / 3, h);
+
+    // Horizontal lines
+    context.moveTo(0, h / 3);
+    context.lineTo(w, h / 3);
+    context.moveTo(0, h * 2 / 3);
+    context.lineTo(w, h * 2 / 3);
 
     context.stroke();
 }
