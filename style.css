@@ -7,6 +7,10 @@ body {
     color: white;
 }
 
+.main-content.blur {
+    filter: blur(5px);
+}
+
 .container {
     position: relative;
     margin-top: 20px;
@@ -80,6 +84,14 @@ button {
 
 button:hover {
     background-color: #0056b3;
+}
+
+#toggle-chroma-button.toggled {
+    background-color: #28a745; /* A green color to indicate "on" */
+}
+
+#toggle-chroma-button.toggled:hover {
+    background-color: #218838;
 }
 
 /* Modal styles */

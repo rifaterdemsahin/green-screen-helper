@@ -1,6 +1,7 @@
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const container = document.querySelector('.container');
+const mainContent = document.querySelector('.main-content');
 const startButton = document.getElementById('start-button');
 const stopButton = document.getElementById('stop-button');
 const fullscreenButton = document.getElementById('fullscreen-button');
@@ -19,9 +20,18 @@ let chromaKeyEnabled = true;
 startButton.addEventListener('click', startCamera);
 stopButton.addEventListener('click', stopCamera);
 fullscreenButton.addEventListener('click', toggleFullScreen);
+
 toggleChromaButton.addEventListener('click', () => {
     chromaKeyEnabled = !chromaKeyEnabled;
+    if (chromaKeyEnabled) {
+        toggleChromaButton.textContent = '✨ Chroma: On';
+        toggleChromaButton.classList.add('toggled');
+    } else {
+        toggleChromaButton.textContent = '✨ Chroma: Off';
+        toggleChromaButton.classList.remove('toggled');
+    }
 });
+
 setGreenButton.addEventListener('click', () => keyColor = { r: 0, g: 177, b: 64 });
 setBlueButton.addEventListener('click', () => keyColor = { r: 0, g: 0, b: 255 });
 canvas.addEventListener('click', pickColor);
@@ -119,10 +129,12 @@ const closeButtons = document.querySelectorAll('.close-button');
 
 shootingGuideButton.addEventListener('click', () => {
     shootingGuideModal.style.display = 'block';
+    mainContent.classList.add('blur');
 });
 
 cameraGuideButton.addEventListener('click', () => {
     cameraGuideModal.style.display = 'block';
+    mainContent.classList.add('blur');
     calculateLayout(); // Initialize calculator when modal is opened
 });
 
@@ -130,6 +142,7 @@ closeButtons.forEach(button => {
     button.addEventListener('click', () => {
         shootingGuideModal.style.display = 'none';
         cameraGuideModal.style.display = 'none';
+        mainContent.classList.remove('blur');
     });
 });
 
@@ -137,6 +150,7 @@ window.addEventListener('click', (event) => {
     if (event.target == shootingGuideModal || event.target == cameraGuideModal) {
         shootingGuideModal.style.display = 'none';
         cameraGuideModal.style.display = 'none';
+        mainContent.classList.remove('blur');
     }
 });
 

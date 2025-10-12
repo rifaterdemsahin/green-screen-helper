@@ -7,33 +7,35 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Green Screen Helper</h1>
-    <div class="container">
-        <video id="video" autoplay playsinline></video>
-        <canvas id="canvas"></canvas>
-    </div>
-    <div class="controls-wrapper">
-        <div class="control-group">
-            <h3>Camera</h3>
-            <button id="start-button">Start Camera</button>
-            <button id="stop-button">Stop Camera</button>
-            <button id="fullscreen-button">Full Screen</button>
+    <div class="main-content">
+        <h1>✨ Green Screen Helper ✨</h1>
+        <div class="container">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
         </div>
-        <div class="control-group">
-            <h3>Chroma Key</h3>
-            <button id="toggle-chroma-button">Toggle Chroma</button>
-            <button id="set-green-button">Set to Green</button>
-            <button id="set-blue-button">Set to Blue</button>
-            <div class="tolerance-container">
-                <label for="tolerance">Tolerance:</label>
-                <input type="range" id="tolerance" min="0" max="200" value="50">
-                <span id="tolerance-value">50</span>
+        <div class="controls-wrapper">
+            <div class="control-group">
+                <h3>Camera</h3>
+                <button id="start-button">📹 Start Camera</button>
+                <button id="stop-button">🛑 Stop Camera</button>
+                <button id="fullscreen-button">↔️ Full Screen</button>
             </div>
-        </div>
-        <div class="control-group">
-            <h3>Guides</h3>
-            <button id="shooting-guide-button">Shooting Guide</button>
-            <button id="camera-guide-button">Camera Guide</button>
+            <div class="control-group">
+                <h3>Chroma Key</h3>
+                <button id="toggle-chroma-button" class="toggled">✨ Chroma: On</button>
+                <button id="set-green-button">🟢 Set Green</button>
+                <button id="set-blue-button">🔵 Set Blue</button>
+                <div class="tolerance-container">
+                    <label for="tolerance">Tolerance:</label>
+                    <input type="range" id="tolerance" min="0" max="200" value="50">
+                    <span id="tolerance-value">50</span>
+                </div>
+            </div>
+            <div class="control-group">
+                <h3>Guides</h3>
+                <button id="shooting-guide-button">🎬 Shooting Guide</button>
+                <button id="camera-guide-button">📷 Camera Guide</button>
+            </div>
         </div>
     </div>
 
@@ -42,7 +44,7 @@
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <div class="guide-container">
-                <h1>Green Screen Shooting Guide</h1>
+                <h1>🎬 Green Screen Shooting Guide</h1>
                 <p>A good green screen effect starts with a good recording environment. Follow these steps to ensure the best results.</p>
 
                 <h2>Camera Setup</h2>
@@ -85,7 +87,7 @@
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <div class="guide-container">
-                <h1>Camera & Lens Guide</h1>
+                <h1>📷 Camera & Lens Guide</h1>
 
                 <h2>Room Layout Calculator</h2>
                 <div class="calculator">
