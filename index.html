@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Screen Helper</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Green Screen Helper</h1>
+    <div class="container">
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
+    </div>
+    <div class="controls">
+        <button id="start-button">Start Camera</button>
+        <button id="stop-button">Stop Camera</button>
+        <div class="tolerance-container">
+            <label for="tolerance">Tolerance:</label>
+            <input type="range" id="tolerance" min="0" max="200" value="50">
+            <span id="tolerance-value">50</span>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
