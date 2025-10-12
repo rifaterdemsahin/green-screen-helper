@@ -28,6 +28,8 @@ let colorPicking = false;
 let selectingTarget = false;
 let targetArea = null;
 let startPos = null;
+let isDragging = false;
+let dragStart = { x: 0, y: 0 };
 
 startButton.addEventListener('click', startCamera);
 stopButton.addEventListener('click', stopCamera);
@@ -76,24 +78,42 @@ setBlueButton.addEventListener('click', () => keyColor = { r: 0, g: 0, b: 255 })
 canvas.addEventListener('click', (e) => {
     if (colorPicking) pickColor(e);
 });
+
 canvas.addEventListener('mousedown', (e) => {
-    if (selectingTarget) startPos = { x: e.offsetX, y: e.offsetY };
+    const { offsetX, offsetY } = e;
+    if (targetArea && offsetX > targetArea.x && offsetX < targetArea.x + targetArea.width && offsetY > targetArea.y && offsetY < targetArea.y + targetArea.height) {
+        isDragging = true;
+        dragStart.x = offsetX - targetArea.x;
+        dragStart.y = offsetY - targetArea.y;
+        canvas.style.pointerEvents = 'auto';
+    } else if (selectingTarget) {
+        startPos = { x: offsetX, y: offsetY };
+    }
 });
+
 canvas.addEventListener('mousemove', (e) => {
-    if (selectingTarget && startPos) {
-        const x = Math.min(startPos.x, e.offsetX);
-        const y = Math.min(startPos.y, e.offsetY);
-        const width = Math.abs(startPos.x - e.offsetX);
-        const height = Math.abs(startPos.y - e.offsetY);
+    const { offsetX, offsetY } = e;
+    if (isDragging) {
+        targetArea.x = offsetX - dragStart.x;
+        targetArea.y = offsetY - dragStart.y;
+    } else if (selectingTarget && startPos) {
+        const x = Math.min(startPos.x, offsetX);
+        const y = Math.min(startPos.y, offsetY);
+        const width = Math.abs(startPos.x - offsetX);
+        const height = Math.abs(startPos.y - offsetY);
         targetArea = { x, y, width, height };
     }
 });
+
 canvas.addEventListener('mouseup', () => {
+    isDragging = false;
     if (selectingTarget) {
         selectingTarget = false;
         startPos = null;
-        canvas.style.pointerEvents = 'none';
         setTargetButton.classList.remove('active');
+    }
+    if (!colorPicking && !selectingTarget) {
+        canvas.style.pointerEvents = 'none';
     }
 });
 
