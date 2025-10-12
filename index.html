@@ -35,12 +35,12 @@
             </div>
             <div class="col-md-4">
                 <div class="control-group p-3 rounded bg-secondary h-100">
-                    <h3 class="text-center">Chroma Key</h3>
+                    <h3 class="text-center">Chroma Key & Overlays</h3>
                     <div class="d-grid gap-2">
                         <button id="toggle-chroma-button" class="btn btn-success">✨ Chroma: On</button>
+                        <button id="lighting-view-button" class="btn btn-light">💡 Lighting View</button>
                         <button id="golden-ratio-button" class="btn btn-warning">🌀 Golden Ratio</button>
                         <button id="grid-lines-button" class="btn btn-info">▦ Grid Lines</button>
-                        <button id="lighting-view-button" class="btn btn-light">💡 Lighting View</button>
                         <button id="pick-color-button" class="btn btn-outline-light">🎨 Pick Color</button>
                         <button id="set-target-button" class="btn btn-outline-info">🎯 Set Target</button>
                         <button id="clear-target-button" class="btn btn-outline-danger">🗑️ Clear Target</button>
@@ -59,6 +59,7 @@
                     <div class="d-grid gap-2">
                         <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#shooting-guide-modal">🎬 Shooting Guide</button>
                         <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#camera-guide-modal">📷 Camera Guide</button>
+                        <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#checklist-modal">📋 Checklist</button>
                         <a href="calculator.html" class="btn btn-secondary">🧮 Room Calculator</a>
                     </div>
                 </div>
@@ -92,19 +93,6 @@
                         <li><strong>Backlight:</strong> Use a backlight on your subject to create separation from the green screen. This will help to prevent "spill" (green light reflecting off the screen onto your subject).</li>
                         <li><strong>Soft Light:</strong> Use soft, diffused light on your green screen. This will help to create an even, consistent color.</li>
                     </ol>
-                    <h2>Green Screen Checklist</h2>
-                    <ul class="list-unstyled">
-                        <li><input type="checkbox" class="form-check-input"> Green screen is smooth and free of wrinkles.</li>
-                        <li><input type="checkbox" class="form-check-input"> Green screen is evenly lit.</li>
-                        <li><input type="checkbox" class="form-check-input"> Subject is far enough from the green screen to avoid shadows and spill.</li>
-                        <li><input type="checkbox" class="form-check-input"> Camera is set to manual focus.</li>
-                        <li><input type="checkbox" class="form-check-input"> Camera is set to manual exposure.</li>
-                        <li><input type="checkbox" class="form-check-input"> Shutter speed is double the frame rate.</li>
-                        <li><input type="checkbox" class="form-check-input"> ISO is low.</li>
-                        <li><input type="checkbox" class="form-check-input"> White balance is set correctly.</li>
-                        <li><input type="checkbox" class="form-check-input"> There are no green objects on the subject.</li>
-                        <li><input type="checkbox" class="form-check-input"> There are no reflective objects on the subject.</li>
-                    </ul>
                 </div>
             </div>
         </div>
@@ -129,6 +117,32 @@
                         <li><strong>Picture Profile:</strong> PP8 (S-Log3) or Cine4. If using S-Log, you will need to color grade your footage. For a simpler workflow, use a more standard profile with saturation slightly increased.</li>
                         <li><strong>Focus:</strong> Manual Focus (MF)</li>
                         <li><strong>White Balance:</strong> Custom, set to your lighting.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checklist Modal -->
+    <div class="modal fade" id="checklist-modal" tabindex="-1" aria-labelledby="checklistLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-secondary text-white">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="checklistLabel">📋 Green Screen Checklist</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-unstyled">
+                        <li><input type="checkbox" class="form-check-input"> Green screen is smooth and free of wrinkles.</li>
+                        <li><input type="checkbox" class="form-check-input"> Green screen is evenly lit.</li>
+                        <li><input type="checkbox" class="form-check-input"> Subject is far enough from the green screen to avoid shadows and spill.</li>
+                        <li><input type="checkbox" class="form-check-input"> Camera is set to manual focus.</li>
+                        <li><input type="checkbox" class="form-check-input"> Camera is set to manual exposure.</li>
+                        <li><input type="checkbox" class="form-check-input"> Shutter speed is double the frame rate.</li>
+                        <li><input type="checkbox" class="form-check-input"> ISO is low.</li>
+                        <li><input type="checkbox" class="form-check-input"> White balance is set correctly.</li>
+                        <li><input type="checkbox" class="form-check-input"> There are no green objects on the subject.</li>
+                        <li><input type="checkbox" class="form-check-input"> There are no reflective objects on the subject.</li>
                     </ul>
                 </div>
             </div>
