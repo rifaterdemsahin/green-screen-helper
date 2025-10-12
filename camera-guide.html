@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera & Lens Guide</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            padding: 2rem;
+        }
+        .guide-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .calculator {
+            background: #333;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .calculator label, .calculator input {
+            display: block;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .calculator input {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            background: #444;
+            color: white;
+        }
+        #distance-result {
+            font-weight: bold;
+            color: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="guide-container">
+        <h1>Camera & Lens Guide</h1>
+
+        <h2>Distance Calculator</h2>
+        <div class="calculator">
+            <label for="focal-length">Focal Length (mm):</label>
+            <input type="number" id="focal-length" value="24">
+
+            <label for="subject-width">Green Screen Width (meters):</label>
+            <input type="number" id="subject-width" value="3">
+
+            <p>Required Distance: <span id="distance-result"></span> meters</p>
+        </div>
+
+        <h2>Sony ZV-1 Sample Settings</h2>
+        <p>These are recommended starting points for a Sony ZV-1 camera for green screen recording.</p>
+        <ul>
+            <li><strong>Mode:</strong> Manual (M)</li>
+            <li><strong>Aperture:</strong> f/2.8 or lower (to blur the background)</li>
+            <li><strong>ISO:</strong> 100-400 (as low as possible)</li>
+            <li><strong>Shutter Speed:</strong> 1/60 (for 30fps) or 1/50 (for 24fps)</li>
+            <li><strong>Picture Profile:</strong> PP8 (S-Log3) or Cine4. If using S-Log, you will need to color grade your footage. For a simpler workflow, use a more standard profile with saturation slightly increased.</li>
+            <li><strong>Focus:</strong> Manual Focus (MF)</li>
+            <li><strong>White Balance:</strong> Custom, set to your lighting.</li>
+        </ul>
+
+        <a href="index.html">Back to Helper</a>
+    </div>
+
+    <script>
+        const focalLengthInput = document.getElementById('focal-length');
+        const subjectWidthInput = document.getElementById('subject-width');
+        const distanceResult = document.getElementById('distance-result');
+
+        function calculateDistance() {
+            const focalLength = parseFloat(focalLengthInput.value);
+            const subjectWidth = parseFloat(subjectWidthInput.value);
+            
+            // Sony ZV-1 has a 1-inch sensor, which has a crop factor of 2.7.
+            // The sensor width is approx 13.2mm.
+            const sensorWidth = 13.2;
+
+            if (focalLength > 0 && subjectWidth > 0) {
+                const distance = (focalLength * subjectWidth) / sensorWidth;
+                distanceResult.textContent = distance.toFixed(2);
+            } else {
+                distanceResult.textContent = '...';
+            }
+        }
+
+        focalLengthInput.addEventListener('input', calculateDistance);
+        subjectWidthInput.addEventListener('input', calculateDistance);
+
+        calculateDistance(); // Initial calculation
+    </script>
+</body>
+</html>
