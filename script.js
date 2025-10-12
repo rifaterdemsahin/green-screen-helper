@@ -1,7 +1,9 @@
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
+const container = document.querySelector('.container');
 const startButton = document.getElementById('start-button');
 const stopButton = document.getElementById('stop-button');
+const fullscreenButton = document.getElementById('fullscreen-button');
 const toggleChromaButton = document.getElementById('toggle-chroma-button');
 const setGreenButton = document.getElementById('set-green-button');
 const setBlueButton = document.getElementById('set-blue-button');
@@ -16,6 +18,7 @@ let chromaKeyEnabled = true;
 
 startButton.addEventListener('click', startCamera);
 stopButton.addEventListener('click', stopCamera);
+fullscreenButton.addEventListener('click', toggleFullScreen);
 toggleChromaButton.addEventListener('click', () => {
     chromaKeyEnabled = !chromaKeyEnabled;
 });
@@ -54,6 +57,16 @@ function pickColor(event) {
     const pixel = context.getImageData(x, y, 1, 1).data;
     keyColor = { r: pixel[0], g: pixel[1], b: pixel[2] };
     console.log('Key color set to:', keyColor);
+}
+
+function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+        container.requestFullscreen().catch(err => {
+            alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
 }
 
 function analyzeFrame() {
