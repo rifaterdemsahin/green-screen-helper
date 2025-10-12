@@ -4,71 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Room Layout Calculator | Green Screen Helper</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <style>
-        body {
-            padding: 2rem;
-        }
-        .guide-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .calculator {
-            background: #333;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-        .calculator label, .calculator input {
-            display: block;
-            margin-bottom: 10px;
-            width: 100%;
-        }
-        .calculator input {
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #555;
-            background: #444;
-            color: white;
-        }
-        .result {
-            font-weight: bold;
-        }
-        .result.ok {
-            color: #00ff00;
-        }
-        .result.error {
-            color: #ff0000;
-        }
-    </style>
 </head>
-<body>
-    <div class="guide-container">
-        <h1>Room Layout Calculator</h1>
-        <div class="calculator">
-            <h4>Room</h4>
-            <label for="room-length">Room Length (meters):</label>
-            <input type="number" id="room-length" value="5">
-
-            <h4>Green Screen</h4>
-            <label for="screen-width">Green Screen Width (meters):</label>
-            <input type="number" id="screen-width" value="3">
-
-            <h4>Subject</h4>
-            <label for="subject-distance">Subject Distance from Screen (meters):</label>
-            <input type="number" id="subject-distance" value="1.5">
-
-            <h4>Camera</h4>
-            <label for="focal-length">Focal Length (mm):</label>
-            <input type="number" id="focal-length" value="35">
-
-            <h4>Results</h4>
-            <p>Camera Distance from Subject: <span id="camera-subject-dist" class="result"></span> meters</p>
-            <p>Camera Distance from Screen: <span id="camera-screen-dist" class="result"></span> meters</p>
-            <p>Total Length Needed: <span id="total-length" class="result"></span> meters</p>
-            <p>Setup Feasibility: <span id="feasibility" class="result"></span></p>
+<body class="bg-dark text-white">
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="calculator-wrapper p-4 rounded bg-secondary">
+                    <h1 class="text-center mb-4">🧮 Room Layout Calculator</h1>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h4>Room</h4>
+                            <label for="room-length" class="form-label">Room Length (meters):</label>
+                            <input type="number" id="room-length" class="form-control" value="5">
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Green Screen</h4>
+                            <label for="screen-width" class="form-label">Green Screen Width (meters):</label>
+                            <input type="number" id="screen-width" class="form-control" value="3">
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Subject</h4>
+                            <label for="subject-distance" class="form-label">Subject Distance from Screen (meters):</label>
+                            <input type="number" id="subject-distance" class="form-control" value="1.5">
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Camera</h4>
+                            <label for="focal-length" class="form-label">Focal Length (mm):</label>
+                            <input type="number" id="focal-length" class="form-control" value="35">
+                        </div>
+                    </div>
+                    <div class="results mt-4 p-3 rounded bg-dark">
+                        <h4 class="text-center">Results</h4>
+                        <p>Camera Distance from Subject: <span id="camera-subject-dist" class="fw-bold"></span> meters</p>
+                        <p>Camera Distance from Screen: <span id="camera-screen-dist" class="fw-bold"></span> meters</p>
+                        <p>Total Length Needed: <span id="total-length" class="fw-bold"></span> meters</p>
+                        <p>Setup Feasibility: <span id="feasibility" class="fw-bold"></span></p>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a href="index.html" class="btn btn-primary">Back to Helper</a>
+                    </div>
+                </div>
+            </div>
         </div>
-        <a href="index.html" class="guide-link" style="margin-top: 20px; display: inline-block;">Back to Helper</a>
     </div>
 
     <script>
@@ -88,9 +68,7 @@
             const subjectDistance = parseFloat(subjectDistanceInput.value);
             const focalLength = parseFloat(focalLengthInput.value);
 
-            // Sony ZV-1 has a 1-inch sensor, which has a crop factor of 2.7.
-            // The sensor width is approx 13.2mm.
-            const sensorWidth = 13.2;
+            const sensorWidth = 13.2; // Approx. for 1-inch sensor like Sony ZV-1
 
             if (focalLength > 0 && screenWidth > 0 && subjectDistance > 0) {
                 const cameraScreenDist = (focalLength * screenWidth) / sensorWidth;
@@ -103,10 +81,10 @@
 
                 if (totalLength <= roomLength) {
                     feasibilityResult.textContent = 'Good to go!';
-                    feasibilityResult.className = 'result ok';
+                    feasibilityResult.className = 'fw-bold text-success';
                 } else {
                     feasibilityResult.textContent = 'Room is too small for this setup!';
-                    feasibilityResult.className = 'result error';
+                    feasibilityResult.className = 'fw-bold text-danger';
                 }
 
             } else {
@@ -114,7 +92,7 @@
                 cameraScreenDistResult.textContent = '...';
                 totalLengthResult.textContent = '...';
                 feasibilityResult.textContent = '...';
-                feasibilityResult.className = 'result';
+                feasibilityResult.className = 'fw-bold';
             }
         }
 

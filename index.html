@@ -6,170 +6,110 @@
     <title>Green Screen Helper | Perfect Chroma Keying</title>
     <meta name="description" content="An interactive tool to help you set up the perfect green screen or blue screen by visualizing your chroma key in real-time. Adjust tolerance, pick colors, and get guides for camera and lighting setup.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22green%22/></svg>">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="main-content">
-        <h1>✨ Green Screen Helper ✨</h1>
-        <div class="container">
-            <video id="video" autoplay playsinline></video>
-            <canvas id="canvas"></canvas>
-        </div>
-        <div class="controls-wrapper">
-            <div class="control-group">
-                <h3>Camera</h3>
-                <button id="start-button">📹 Start Camera</button>
-                <button id="stop-button">🛑 Stop Camera</button>
-                <button id="fullscreen-button">↔️ Full Screen</button>
-            </div>
-            <div class="control-group">
-                <h3>Chroma Key</h3>
-                <button id="toggle-chroma-button" class="toggled">✨ Chroma: On</button>
-                <button id="set-green-button">🟢 Set Green</button>
-                <button id="set-blue-button">🔵 Set Blue</button>
-                <div class="tolerance-container">
-                    <label for="tolerance">Tolerance:</label>
-                    <input type="range" id="tolerance" min="0" max="200" value="50">
-                    <span id="tolerance-value">50</span>
+<body class="bg-dark text-white">
+    <div class="container-fluid">
+        <h1 class="text-center my-4">✨ Green Screen Helper ✨</h1>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="video-container position-relative p-0">
+                    <video id="video" class="w-100" autoplay playsinline></video>
+                    <canvas id="canvas" class="position-absolute top-0 start-0 w-100"></canvas>
                 </div>
             </div>
-            <div class="control-group">
-                <h3>Guides & Tools</h3>
-                <button id="shooting-guide-button">🎬 Shooting Guide</button>
-                <button id="camera-guide-button">📷 Camera Guide</button>
-                <a href="calculator.html" class="button-link">🧮 Room Calculator</a>
+        </div>
+
+        <div class="row justify-content-center my-4 g-3">
+            <div class="col-md-4">
+                <div class="control-group p-3 rounded bg-secondary h-100">
+                    <h3 class="text-center">Camera</h3>
+                    <div class="d-grid gap-2">
+                        <button id="start-button" class="btn btn-primary">📹 Start Camera</button>
+                        <button id="stop-button" class="btn btn-danger">🛑 Stop Camera</button>
+                        <button id="fullscreen-button" class="btn btn-secondary">↔️ Full Screen</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="control-group p-3 rounded bg-secondary h-100">
+                    <h3 class="text-center">Chroma Key</h3>
+                    <div class="d-grid gap-2">
+                        <button id="toggle-chroma-button" class="btn btn-success">✨ Chroma: On</button>
+                        <button id="golden-ratio-button" class="btn btn-warning">🌀 Golden Ratio</button>
+                        <button id="pick-color-button" class="btn btn-outline-light">🎨 Pick Color</button>
+                        <button id="set-green-button" class="btn btn-success">🟢 Set Green</button>
+                        <button id="set-blue-button" class="btn btn-info">🔵 Set Blue</button>
+                    </div>
+                    <div class="tolerance-container mt-3">
+                        <label for="tolerance" class="form-label">Tolerance: <span id="tolerance-value">50</span></label>
+                        <input type="range" id="tolerance" class="form-range" min="0" max="200" value="50">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="control-group p-3 rounded bg-secondary h-100">
+                    <h3 class="text-center">Guides & Tools</h3>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#shooting-guide-modal">🎬 Shooting Guide</button>
+                        <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#camera-guide-modal">📷 Camera Guide</button>
+                        <a href="calculator.html" class="btn btn-secondary">🧮 Room Calculator</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Shooting Guide Modal -->
-    <div id="shooting-guide-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <div class="guide-container">
-                <h1>🎬 Green Screen Shooting Guide</h1>
-                <p>A good green screen effect starts with a good recording environment. Follow these steps to ensure the best results.</p>
-
-                <h2>Camera Setup</h2>
-                <ol>
-                    <li><strong>Manual Focus:</strong> Avoid auto-focus. Set the focus manually on your subject to prevent the camera from refocusing on the green screen.</li>
-                    <li><strong>Manual Exposure:</strong> Set the exposure manually. Auto-exposure can cause the brightness of the green screen to change, which will make keying difficult.</li>
-                    <li><strong>Shutter Speed:</strong> Use a shutter speed that is double your frame rate. For example, if you are shooting at 30fps, use a shutter speed of 1/60. This will minimize motion blur.</li>
-                    <li><strong>Aperture:</strong> Use a wider aperture (lower f-stop number) to create a shallow depth of field. This will help to blur the green screen and make it easier to key.</li>
-                    <li><strong>ISO:</strong> Keep the ISO as low as possible to reduce noise.</li>
-                    <li><strong>White Balance:</strong> Set the white balance manually to match your lighting.</li>
-                </ol>
-
-                <h2>Lighting Setup</h2>
-                <ol>
-                    <li><strong>Even Lighting:</strong> The most important thing is to light your green screen evenly. There should be no shadows or hot spots.</li>
-                    <li><strong>Separate Lighting:</strong> Use separate lights for your subject and your green screen. This will give you more control over the lighting.</li>
-                    <li><strong>Backlight:</strong> Use a backlight on your subject to create separation from the green screen. This will help to prevent "spill" (green light reflecting off the screen onto your subject).</li>
-                    <li><strong>Soft Light:</strong> Use soft, diffused light on your green screen. This will help to create an even, consistent color.</li>
-                </ol>
-
-                <h2>Green Screen Checklist</h2>
-                <ul>
-                    <li><input type="checkbox"> Green screen is smooth and free of wrinkles.</li>
-                    <li><input type="checkbox"> Green screen is evenly lit.</li>
-                    <li><input type="checkbox"> Subject is far enough from the green screen to avoid shadows and spill.</li>
-                    <li><input type="checkbox"> Camera is set to manual focus.</li>
-                    <li><input type="checkbox"> Camera is set to manual exposure.</li>
-                    <li><input type="checkbox"> Shutter speed is double the frame rate.</li>
-                    <li><input type="checkbox"> ISO is low.</li>
-                    <li><input type="checkbox"> White balance is set correctly.</li>
-                    <li><input type="checkbox"> There are no green objects on the subject.</li>
-                    <li><input type="checkbox"> There are no reflective objects on the subject.</li>
-                </ul>
+    <div class="modal fade" id="shooting-guide-modal" tabindex="-1" aria-labelledby="shootingGuideLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-secondary text-white">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="shootingGuideLabel">🎬 Green Screen Shooting Guide</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Content from shooting-guide.html -->
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Camera Guide Modal -->
-    <div id="camera-guide-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <div class="guide-container">
-                <h1>📷 Camera & Lens Guide</h1>
-
-                <h2>Sony ZV-1 Sample Settings</h2>
-                <p>These are recommended starting points for a Sony ZV-1 camera for green screen recording.</p>
-                <ul>
-                    <li><strong>Mode:</strong> Manual (M)</li>
-                    <li><strong>Aperture:</strong> f/2.8 or lower (to blur the background)</li>
-                    <li><strong>ISO:</strong> 100-400 (as low as possible)</li>
-                    <li><strong>Shutter Speed:</strong> 1/60 (for 30fps) or 1/50 (for 24fps)</li>
-                    <li><strong>Picture Profile:</strong> PP8 (S-Log3) or Cine4. If using S-Log, you will need to color grade your footage. For a simpler workflow, use a more standard profile with saturation slightly increased.</li>
-                    <li><strong>Focus:</strong> Manual Focus (MF)</li>
-                    <li><strong>White Balance:</strong> Custom, set to your lighting.</li>
-                </ul>
+    <div class="modal fade" id="camera-guide-modal" tabindex="-1" aria-labelledby="cameraGuideLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-secondary text-white">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cameraGuideLabel">📷 Camera & Lens Guide</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Content from camera-guide.html -->
+                </div>
             </div>
         </div>
     </div>
 
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="support-buttons">
-                <a href="https://github.com/rifaterdemsahin/coverletter" target="_blank" class="support-btn build-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 12l2 2 4-4"></path>
-                        <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"></path>
-                        <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"></path>
-                        <path d="M12 3c0 1-1 3-3 3s-3-2-3-3 1-3 3-3 3 2 3 3"></path>
-                        <path d="M12 21c0-1 1-3 3-3s3 2 3 3-1 3-3 3-3-2-3-3"></path>
-                    </svg>
-                    Build Your Own N8N
-                </a>
-                
-                <a href="https://buymeacoffee.com/rifaterdemsahin" target="_blank" class="support-btn coffee-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-                        <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-                        <line x1="6" y1="1" x2="6" y2="4"></line>
-                        <line x1="10" y1="1" x2="10" y2="4"></line>
-                        <line x1="14" y1="1" x2="14" y2="4"></line>
-                    </svg>
-                    Buy Me a Coffee
-                </a>
+    <footer class="footer mt-auto py-3 bg-black">
+        <div class="container text-center">
+            <div class="support-buttons my-3">
+                <a href="https://github.com/rifaterdemsahin/coverletter" target="_blank" class="btn btn-outline-light">Build Your Own N8N</a>
+                <a href="https://buymeacoffee.com/rifaterdemsahin" target="_blank" class="btn btn-warning">Buy Me a Coffee</a>
             </div>
-            <div class="footer-section">
-                <h3>Connect with me</h3>
-                <div class="social-links">
-                    <a href="https://www.youtube.com/@RifatErdemSahin" target="_blank" class="social-link youtube-link">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"></path>
-                        </svg>
-                        YouTube
-                    </a>
-                    <a href="https://www.linkedin.com/in/rifaterdemsahin/" target="_blank" class="social-link linkedin-link">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path>
-                        </svg>
-                        LinkedIn
-                    </a>
-                                    <a href="https://github.com/rifaterdemsahin/" target="_blank" class="social-link github-link">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
-                        </svg>
-                        GitHub
-                    </a>
-                    <a href="https://hello.rifaterdemsahin.com" target="_blank" class="social-link website-link">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
-                        </svg>
-                        Website
-                    </a>
-                </div>
+            <div class="social-links my-3">
+                <a href="https://www.youtube.com/@RifatErdemSahin" target="_blank" class="social-link text-white mx-2">YouTube</a>
+                <a href="https://www.linkedin.com/in/rifaterdemsahin/" target="_blank" class="social-link text-white mx-2">LinkedIn</a>
+                <a href="https://github.com/rifaterdemsahin/" target="_blank" class="social-link text-white mx-2">GitHub</a>
+                <a href="https://hello.rifaterdemsahin.com" target="_blank" class="social-link text-white mx-2">Website</a>
             </div>
-            <div class="footer-section">
-                <p class="footer-text">
-                    Built with ❤️ by Rifat Erdem Sahin<br>
-                    AI-powered green screen assistance
-                </p>
-            </div>
+            <p class="text-muted">Built with ❤️ by Rifat Erdem Sahin | AI-powered green screen assistance</p>
         </div>
     </footer>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

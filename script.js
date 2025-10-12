@@ -1,11 +1,12 @@
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
-const container = document.querySelector('.container');
-const mainContent = document.querySelector('.main-content');
+const container = document.querySelector('.video-container');
 const startButton = document.getElementById('start-button');
 const stopButton = document.getElementById('stop-button');
 const fullscreenButton = document.getElementById('fullscreen-button');
 const toggleChromaButton = document.getElementById('toggle-chroma-button');
+const goldenRatioButton = document.getElementById('golden-ratio-button');
+const pickColorButton = document.getElementById('pick-color-button');
 const setGreenButton = document.getElementById('set-green-button');
 const setBlueButton = document.getElementById('set-blue-button');
 const toleranceInput = document.getElementById('tolerance');
@@ -16,6 +17,8 @@ let stream;
 let keyColor = { r: 0, g: 177, b: 64 }; // Default to a standard green screen green
 let tolerance = 50;
 let chromaKeyEnabled = true;
+let goldenRatioEnabled = false;
+let colorPicking = false;
 
 startButton.addEventListener('click', startCamera);
 stopButton.addEventListener('click', stopCamera);
@@ -23,13 +26,19 @@ fullscreenButton.addEventListener('click', toggleFullScreen);
 
 toggleChromaButton.addEventListener('click', () => {
     chromaKeyEnabled = !chromaKeyEnabled;
-    if (chromaKeyEnabled) {
-        toggleChromaButton.textContent = '✨ Chroma: On';
-        toggleChromaButton.classList.add('toggled');
-    } else {
-        toggleChromaButton.textContent = '✨ Chroma: Off';
-        toggleChromaButton.classList.remove('toggled');
-    }
+    toggleChromaButton.textContent = chromaKeyEnabled ? '✨ Chroma: On' : '✨ Chroma: Off';
+    toggleChromaButton.classList.toggle('active', chromaKeyEnabled);
+});
+
+goldenRatioButton.addEventListener('click', () => {
+    goldenRatioEnabled = !goldenRatioEnabled;
+    goldenRatioButton.classList.toggle('active', goldenRatioEnabled);
+});
+
+pickColorButton.addEventListener('click', () => {
+    colorPicking = true;
+    canvas.style.pointerEvents = 'auto';
+    pickColorButton.classList.add('active');
 });
 
 setGreenButton.addEventListener('click', () => keyColor = { r: 0, g: 177, b: 64 });
@@ -62,11 +71,15 @@ function stopCamera() {
 }
 
 function pickColor(event) {
+    if (!colorPicking) return;
     const x = event.offsetX;
     const y = event.offsetY;
     const pixel = context.getImageData(x, y, 1, 1).data;
     keyColor = { r: pixel[0], g: pixel[1], b: pixel[2] };
     console.log('Key color set to:', keyColor);
+    colorPicking = false;
+    canvas.style.pointerEvents = 'none';
+    pickColorButton.classList.remove('active');
 }
 
 function toggleFullScreen() {
@@ -98,15 +111,11 @@ function analyzeFrame() {
             );
 
             if (distance > tolerance) {
-                // This pixel is not part of the background.
-                // The further away the color, the brighter the pixel.
                 const brightness = Math.min(255, distance * 2);
-                data[i] = brightness;     // r
-                data[i + 1] = brightness; // g
-                data[i + 2] = brightness; // b
+                data[i] = brightness;
+                data[i + 1] = brightness;
+                data[i + 2] = brightness;
             } else {
-                // This pixel is considered part of the background.
-                // Make it black.
                 data[i] = 0;
                 data[i + 1] = 0;
                 data[i + 2] = 0;
@@ -115,40 +124,36 @@ function analyzeFrame() {
         context.putImageData(imageData, 0, 0);
     }
 
+    if (goldenRatioEnabled) {
+        drawGoldenRatio();
+    }
+
     requestAnimationFrame(analyzeFrame);
 }
 
-// Modal handling
-const shootingGuideModal = document.getElementById('shooting-guide-modal');
-const cameraGuideModal = document.getElementById('camera-guide-modal');
+function drawGoldenRatio() {
+    const w = canvas.width;
+    const h = canvas.height;
+    const phi = 1.618;
 
-const shootingGuideButton = document.getElementById('shooting-guide-button');
-const cameraGuideButton = document.getElementById('camera-guide-button');
+    context.strokeStyle = 'rgba(255, 255, 0, 0.7)';
+    context.lineWidth = 2;
+    context.beginPath();
 
-const closeButtons = document.querySelectorAll('.close-button');
+    let x = w / 2;
+    let y = h / 2;
+    let radius = Math.min(w, h) / 2;
+    let angle = 0;
 
-shootingGuideButton.addEventListener('click', () => {
-    shootingGuideModal.style.display = 'block';
-    mainContent.classList.add('blur');
-});
-
-cameraGuideButton.addEventListener('click', () => {
-    cameraGuideModal.style.display = 'block';
-    mainContent.classList.add('blur');
-});
-
-closeButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        shootingGuideModal.style.display = 'none';
-        cameraGuideModal.style.display = 'none';
-        mainContent.classList.remove('blur');
-    });
-});
-
-window.addEventListener('click', (event) => {
-    if (event.target == shootingGuideModal || event.target == cameraGuideModal) {
-        shootingGuideModal.style.display = 'none';
-        cameraGuideModal.style.display = 'none';
-        mainContent.classList.remove('blur');
+    for (let i = 0; i < 10; i++) {
+        context.arc(x, y, radius, angle, angle + Math.PI / 2);
+        radius /= phi;
+        angle += Math.PI / 2;
+        const newX = x + Math.cos(angle) * radius * phi;
+        const newY = y + Math.sin(angle) * radius * phi;
+        x = newX;
+        y = newY;
     }
-});
+
+    context.stroke();
+}
