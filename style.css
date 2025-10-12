@@ -68,7 +68,7 @@ canvas {
     font-weight: bold;
 }
 
-button {
+button, .button-link {
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
@@ -82,7 +82,7 @@ button {
     text-align: center;
 }
 
-button:hover {
+button:hover, .button-link:hover {
     background-color: #0056b3;
 }
 
@@ -133,4 +133,104 @@ button:hover {
     color: white;
     text-decoration: none;
     cursor: pointer;
+}
+
+/* Footer styles */
+.footer {
+    background-color: #1a1a1a;
+    color: #ccc;
+    padding: 40px 20px;
+    margin-top: 40px;
+    width: 100%;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-section {
+    margin: 20px;
+}
+
+.footer-section h3 {
+    color: #fff;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+}
+
+.social-links {
+    display: flex;
+    gap: 15px;
+}
+
+.social-link {
+    color: #ccc;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    transition: color 0.3s;
+}
+
+.social-link:hover {
+    color: #fff;
+}
+
+.social-link svg {
+    width: 24px;
+    height: 24px;
+}
+
+.support-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+
+.support-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.support-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+.build-btn {
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #555;
+}
+
+.build-btn:hover {
+    background-color: #444;
+}
+
+.coffee-btn {
+    background-color: #ffdd00;
+    color: #000;
+}
+
+.coffee-btn:hover {
+    background-color: #ffec80;
+}
+
+.footer-text {
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.6;
 }

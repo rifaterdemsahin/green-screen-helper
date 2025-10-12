@@ -135,7 +135,6 @@ shootingGuideButton.addEventListener('click', () => {
 cameraGuideButton.addEventListener('click', () => {
     cameraGuideModal.style.display = 'block';
     mainContent.classList.add('blur');
-    calculateLayout(); // Initialize calculator when modal is opened
 });
 
 closeButtons.forEach(button => {
@@ -153,55 +152,3 @@ window.addEventListener('click', (event) => {
         mainContent.classList.remove('blur');
     }
 });
-
-// Camera guide calculator
-const roomLengthInput = document.getElementById('room-length');
-const screenWidthInput = document.getElementById('screen-width');
-const subjectDistanceInput = document.getElementById('subject-distance');
-const focalLengthInput = document.getElementById('focal-length');
-
-const cameraSubjectDistResult = document.getElementById('camera-subject-dist');
-const cameraScreenDistResult = document.getElementById('camera-screen-dist');
-const totalLengthResult = document.getElementById('total-length');
-const feasibilityResult = document.getElementById('feasibility');
-
-function calculateLayout() {
-    const roomLength = parseFloat(roomLengthInput.value);
-    const screenWidth = parseFloat(screenWidthInput.value);
-    const subjectDistance = parseFloat(subjectDistanceInput.value);
-    const focalLength = parseFloat(focalLengthInput.value);
-
-    // Sony ZV-1 has a 1-inch sensor, which has a crop factor of 2.7.
-    // The sensor width is approx 13.2mm.
-    const sensorWidth = 13.2;
-
-    if (focalLength > 0 && screenWidth > 0 && subjectDistance > 0) {
-        const cameraScreenDist = (focalLength * screenWidth) / sensorWidth;
-        const cameraSubjectDist = cameraScreenDist - subjectDistance;
-        const totalLength = cameraScreenDist;
-
-        cameraSubjectDistResult.textContent = cameraSubjectDist.toFixed(2);
-        cameraScreenDistResult.textContent = cameraScreenDist.toFixed(2);
-        totalLengthResult.textContent = totalLength.toFixed(2);
-
-        if (totalLength <= roomLength) {
-            feasibilityResult.textContent = 'Good to go!';
-            feasibilityResult.className = 'result ok';
-        } else {
-            feasibilityResult.textContent = 'Room is too small for this setup!';
-            feasibilityResult.className = 'result error';
-        }
-
-    } else {
-        cameraSubjectDistResult.textContent = '...';
-        cameraScreenDistResult.textContent = '...';
-        totalLengthResult.textContent = '...';
-        feasibilityResult.textContent = '...';
-        feasibilityResult.className = 'result';
-    }
-}
-
-roomLengthInput.addEventListener('input', calculateLayout);
-screenWidthInput.addEventListener('input', calculateLayout);
-subjectDistanceInput.addEventListener('input', calculateLayout);
-focalLengthInput.addEventListener('input', calculateLayout);

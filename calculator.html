@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Layout Calculator | Green Screen Helper</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            padding: 2rem;
+        }
+        .guide-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .calculator {
+            background: #333;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .calculator label, .calculator input {
+            display: block;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .calculator input {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            background: #444;
+            color: white;
+        }
+        .result {
+            font-weight: bold;
+        }
+        .result.ok {
+            color: #00ff00;
+        }
+        .result.error {
+            color: #ff0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="guide-container">
+        <h1>Room Layout Calculator</h1>
+        <div class="calculator">
+            <h4>Room</h4>
+            <label for="room-length">Room Length (meters):</label>
+            <input type="number" id="room-length" value="5">
+
+            <h4>Green Screen</h4>
+            <label for="screen-width">Green Screen Width (meters):</label>
+            <input type="number" id="screen-width" value="3">
+
+            <h4>Subject</h4>
+            <label for="subject-distance">Subject Distance from Screen (meters):</label>
+            <input type="number" id="subject-distance" value="1.5">
+
+            <h4>Camera</h4>
+            <label for="focal-length">Focal Length (mm):</label>
+            <input type="number" id="focal-length" value="35">
+
+            <h4>Results</h4>
+            <p>Camera Distance from Subject: <span id="camera-subject-dist" class="result"></span> meters</p>
+            <p>Camera Distance from Screen: <span id="camera-screen-dist" class="result"></span> meters</p>
+            <p>Total Length Needed: <span id="total-length" class="result"></span> meters</p>
+            <p>Setup Feasibility: <span id="feasibility" class="result"></span></p>
+        </div>
+        <a href="index.html" class="guide-link" style="margin-top: 20px; display: inline-block;">Back to Helper</a>
+    </div>
+
+    <script>
+        const roomLengthInput = document.getElementById('room-length');
+        const screenWidthInput = document.getElementById('screen-width');
+        const subjectDistanceInput = document.getElementById('subject-distance');
+        const focalLengthInput = document.getElementById('focal-length');
+
+        const cameraSubjectDistResult = document.getElementById('camera-subject-dist');
+        const cameraScreenDistResult = document.getElementById('camera-screen-dist');
+        const totalLengthResult = document.getElementById('total-length');
+        const feasibilityResult = document.getElementById('feasibility');
+
+        function calculateLayout() {
+            const roomLength = parseFloat(roomLengthInput.value);
+            const screenWidth = parseFloat(screenWidthInput.value);
+            const subjectDistance = parseFloat(subjectDistanceInput.value);
+            const focalLength = parseFloat(focalLengthInput.value);
+
+            // Sony ZV-1 has a 1-inch sensor, which has a crop factor of 2.7.
+            // The sensor width is approx 13.2mm.
+            const sensorWidth = 13.2;
+
+            if (focalLength > 0 && screenWidth > 0 && subjectDistance > 0) {
+                const cameraScreenDist = (focalLength * screenWidth) / sensorWidth;
+                const cameraSubjectDist = cameraScreenDist - subjectDistance;
+                const totalLength = cameraScreenDist;
+
+                cameraSubjectDistResult.textContent = cameraSubjectDist.toFixed(2);
+                cameraScreenDistResult.textContent = cameraScreenDist.toFixed(2);
+                totalLengthResult.textContent = totalLength.toFixed(2);
+
+                if (totalLength <= roomLength) {
+                    feasibilityResult.textContent = 'Good to go!';
+                    feasibilityResult.className = 'result ok';
+                } else {
+                    feasibilityResult.textContent = 'Room is too small for this setup!';
+                    feasibilityResult.className = 'result error';
+                }
+
+            } else {
+                cameraSubjectDistResult.textContent = '...';
+                cameraScreenDistResult.textContent = '...';
+                totalLengthResult.textContent = '...';
+                feasibilityResult.textContent = '...';
+                feasibilityResult.className = 'result';
+            }
+        }
+
+        roomLengthInput.addEventListener('input', calculateLayout);
+        screenWidthInput.addEventListener('input', calculateLayout);
+        subjectDistanceInput.addEventListener('input', calculateLayout);
+        focalLengthInput.addEventListener('input', calculateLayout);
+
+        calculateLayout(); // Initial calculation
+    </script>
+</body>
+</html>
