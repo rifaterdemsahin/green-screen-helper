@@ -101,44 +101,36 @@ function toggleFullScreen() {
 
 function analyzeFrame() {
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
 
-    if (chromaKeyEnabled) {
-        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
 
-        for (let i = 0; i < data.length; i += 4) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
+        const distance = Math.sqrt(
+            Math.pow(r - keyColor.r, 2) +
+            Math.pow(g - keyColor.g, 2) +
+            Math.pow(b - keyColor.b, 2)
+        );
 
-            const distance = Math.sqrt(
-                Math.pow(r - keyColor.r, 2) +
-                Math.pow(g - keyColor.g, 2) +
-                Math.pow(b - keyColor.b, 2)
-            );
-
-            if (distance > tolerance) {
-                const brightness = Math.min(255, distance * 2);
-                data[i] = brightness;
-                data[i + 1] = brightness;
-                data[i + 2] = brightness;
-            } else {
-                data[i] = 0;
-                data[i + 1] = 0;
-                data[i + 2] = 0;
-            }
+        if (distance > tolerance) {
+            // This pixel is not part of the green screen, or it's an imperfection.
+            // Let's make it a bright magenta to highlight it.
+            data[i] = 255; // r
+            data[i + 1] = 0;   // g
+            data[i + 2] = 255; // b
+        } else {
+            // This pixel is considered part of the green screen.
+            // Make it green.
+            data[i] = 0;
+            data[i + 1] = 255;
+            data[i + 2] = 0;
         }
-        context.putImageData(imageData, 0, 0);
     }
 
-    if (goldenRatioEnabled) {
-        drawGoldenRatio();
-    }
-
-    if (gridLinesEnabled) {
-        drawGridLines();
-    }
-
+    context.putImageData(imageData, 0, 0);
     requestAnimationFrame(analyzeFrame);
 }
 
