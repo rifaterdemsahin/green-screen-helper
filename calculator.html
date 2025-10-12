@@ -14,6 +14,35 @@
             <div class="col-lg-8">
                 <div class="calculator-wrapper p-4 rounded bg-secondary">
                     <h1 class="text-center mb-4">🧮 Room Layout Calculator</h1>
+
+                    <div class="text-center mb-4">
+                        <svg width="100%" viewBox="0 0 800 250" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Room Outline -->
+                            <rect x="1" y="1" width="798" height="248" fill="#4a4a4a" stroke="#ccc" stroke-width="2"/>
+                            <text x="400" y="30" fill="#fff" font-size="20" text-anchor="middle">Room</text>
+
+                            <!-- Green Screen -->
+                            <rect x="750" y="50" width="20" height="150" fill="#00ff00"/>
+                            <text x="740" y="125" fill="#fff" font-size="16" text-anchor="end">Green Screen</text>
+
+                            <!-- Subject -->
+                            <circle cx="600" cy="125" r="15" fill="#007bff"/>
+                            <text x="600" y="155" fill="#fff" font-size="16" text-anchor="middle">Subject</text>
+
+                            <!-- Camera -->
+                            <rect x="100" y="110" width="40" height="30" fill="#fff"/>
+                            <circle cx="120" cy="100" r="10" fill="#333"/>
+                            <text x="120" y="170" fill="#fff" font-size="16" text-anchor="middle">Camera</text>
+
+                            <!-- Dimension Lines -->
+                            <path d="M 600 80 L 750 80" stroke="#fff" stroke-width="1" stroke-dasharray="5,5"/>
+                            <text x="675" y="70" fill="#fff" font-size="14" text-anchor="middle">Subject to Screen (1.5m)</text>
+
+                            <path d="M 140 80 L 600 80" stroke="#fff" stroke-width="1" stroke-dasharray="5,5"/>
+                            <text x="370" y="70" fill="#fff" font-size="14" text-anchor="middle">Camera to Subject</text>
+                        </svg>
+                    </div>
+
                     <div class="row g-3">
                         <div class="col-md-6">
                             <h4>Room</h4>
