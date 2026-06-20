@@ -83,6 +83,24 @@
             fill: var(--text-secondary);
             font-family: monospace;
         }
+
+        /* Draggable SVG Elements */
+        .draggable {
+            cursor: grab;
+            transition: transform 0.05s ease-out;
+        }
+        .draggable:hover circle, .draggable:hover rect {
+            stroke: #22c55e !important;
+            stroke-width: 3px !important;
+            filter: drop-shadow(0px 0px 8px rgba(34,197,94,0.8));
+        }
+        .draggable:active {
+            cursor: grabbing;
+        }
+        .draggable:active circle, .draggable:active rect {
+            stroke: #3b82f6 !important;
+            stroke-width: 3px !important;
+        }
     </style>
 </head>
 <body class="bg-dark text-white">
@@ -273,6 +291,81 @@
                     </div>
                 </div>
 
+                <!-- Advanced Position Card -->
+                <div class="card card-custom p-4 mb-4">
+                    <h3 class="mb-4 text-info">⚙️ Move Screen & Lights</h3>
+                    
+                    <!-- Green Screen Y Slider -->
+                    <div class="mb-3">
+                        <label for="pos-gs-y" class="form-label d-flex justify-content-between">
+                            <span>🟢 Green Screen Y position:</span>
+                            <span class="fw-bold text-success" id="pos-gs-y-val">4.0m</span>
+                        </label>
+                        <input type="range" class="form-range" id="pos-gs-y" min="3.0" max="4.0" step="0.1" value="4.0">
+                    </div>
+
+                    <!-- Key Light Position -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label for="pos-key-x" class="form-label small mb-1">🔑 Key Light X:</label>
+                            <input type="range" class="form-range" id="pos-key-x" min="0.1" max="1.9" step="0.05" value="0.5">
+                            <span class="small text-muted d-block" id="pos-key-x-val">0.5m</span>
+                        </div>
+                        <div class="col-6">
+                            <label for="pos-key-y" class="form-label small mb-1">🔑 Key Light Y:</label>
+                            <input type="range" class="form-range" id="pos-key-y" min="0.1" max="3.9" step="0.05" value="1.6">
+                            <span class="small text-muted d-block" id="pos-key-y-val">1.6m</span>
+                        </div>
+                    </div>
+
+                    <!-- Fill Light Position -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label for="pos-fill-x" class="form-label small mb-1">🌊 Fill Light X:</label>
+                            <input type="range" class="form-range" id="pos-fill-x" min="0.1" max="1.9" step="0.05" value="1.5">
+                            <span class="small text-muted d-block" id="pos-fill-x-val">1.5m</span>
+                        </div>
+                        <div class="col-6">
+                            <label for="pos-fill-y" class="form-label small mb-1">🌊 Fill Light Y:</label>
+                            <input type="range" class="form-range" id="pos-fill-y" min="0.1" max="3.9" step="0.05" value="1.6">
+                            <span class="small text-muted d-block" id="pos-fill-y-val">1.6m</span>
+                        </div>
+                    </div>
+
+                    <!-- Rim Light Position -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label for="pos-rim-x" class="form-label small mb-1">☀️ Rim Light X:</label>
+                            <input type="range" class="form-range" id="pos-rim-x" min="0.1" max="1.9" step="0.05" value="0.8">
+                            <span class="small text-muted d-block" id="pos-rim-x-val">0.8m</span>
+                        </div>
+                        <div class="col-6">
+                            <label for="pos-rim-y" class="form-label small mb-1">☀️ Rim Light Y:</label>
+                            <input type="range" class="form-range" id="pos-rim-y" min="0.1" max="3.9" step="0.05" value="3.2">
+                            <span class="small text-muted d-block" id="pos-rim-y-val">3.2m</span>
+                        </div>
+                    </div>
+
+                    <!-- GS Light Position -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label for="pos-gs-light-x" class="form-label small mb-1">🔦 GS Light X:</label>
+                            <input type="range" class="form-range" id="pos-gs-light-x" min="0.1" max="1.9" step="0.05" value="1.0">
+                            <span class="small text-muted d-block" id="pos-gs-light-x-val">1.0m</span>
+                        </div>
+                        <div class="col-6">
+                            <label for="pos-gs-light-y" class="form-label small mb-1">🔦 GS Light Y:</label>
+                            <input type="range" class="form-range" id="pos-gs-light-y" min="0.1" max="3.9" step="0.05" value="3.2">
+                            <span class="small text-muted d-block" id="pos-gs-light-y-val">3.2m</span>
+                        </div>
+                    </div>
+
+                    <!-- Reset Defaults -->
+                    <div class="d-grid gap-2 mt-3">
+                        <button class="btn btn-danger btn-sm" id="btn-reset-layout">🧹 Clear Cookie & Reset Defaults</button>
+                    </div>
+                </div>
+
                 <!-- Interactive Keying Preview -->
                 <div class="card card-custom p-4">
                     <h3 class="mb-3 text-info">🎬 Live Keying Preview</h3>
@@ -348,14 +441,14 @@
                                 </tr>
                                 <tr>
                                     <td>Key Light</td>
-                                    <td>0.5m (Left)</td>
-                                    <td>1.6m</td>
+                                    <td id="coord-key-x">0.5m</td>
+                                    <td id="coord-key-y" class="text-warning fw-bold">1.6m</td>
                                     <td class="text-warning">45° Key</td>
                                 </tr>
                                 <tr>
                                     <td>Fill Light</td>
-                                    <td>1.5m (Right)</td>
-                                    <td>1.6m</td>
+                                    <td id="coord-fill-x">1.5m</td>
+                                    <td id="coord-fill-y" class="text-primary fw-bold">1.6m</td>
                                     <td class="text-primary">Soft Fill</td>
                                 </tr>
                                 <tr>
@@ -366,20 +459,20 @@
                                 </tr>
                                 <tr>
                                     <td>Rim Light</td>
-                                    <td>0.8m (Left-Back)</td>
-                                    <td>3.2m</td>
+                                    <td id="coord-rim-x">0.8m</td>
+                                    <td id="coord-rim-y" class="text-purple fw-bold">3.2m</td>
                                     <td class="text-purple">Back Light</td>
                                 </tr>
                                 <tr>
                                     <td>Green Screen Light</td>
-                                    <td>1.0m (Center)</td>
+                                    <td id="coord-gs-light-x">1.0m</td>
                                     <td id="coord-gs-light-y" class="text-success fw-bold">3.2m</td>
                                     <td class="text-success">Dedicated Wash (Optional)</td>
                                 </tr>
                                 <tr>
                                     <td>Green Screen</td>
                                     <td>0.0m - 2.0m</td>
-                                    <td>4.0m</td>
+                                    <td id="coord-gs-y" class="text-success fw-bold">4.0m</td>
                                     <td class="text-success">Screen Backdrop</td>
                                 </tr>
                                 <tr>
@@ -390,6 +483,50 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- Green Screen Photo Analyzer Card -->
+                <div class="card card-custom p-4 mt-4">
+                    <h3 class="mb-3 text-info">📷 Upload & Analyze Your Setup Photo</h3>
+                    <p class="text-secondary small mb-3">Upload a photo of your green screen setup. We will run a client-side scan to detect wrinkles (green backdrop deviation), shadows, hotspots, and compute a real-world keying suitability score!</p>
+                    
+                    <div class="mb-3">
+                        <input class="form-control bg-dark text-white border-secondary" type="file" id="image-upload" accept="image/*">
+                    </div>
+                    
+                    <div class="d-flex justify-content-center bg-dark p-2 rounded mb-3 position-relative" style="min-height: 150px; border: 1px dashed var(--border-color);">
+                        <div class="position-absolute top-50 start-50 translate-middle text-secondary small text-center" id="upload-placeholder">
+                            <span>No image uploaded yet.</span>
+                        </div>
+                        <canvas id="analysis-canvas" style="max-width: 100%; height: auto; display: none;"></canvas>
+                    </div>
+
+                    <!-- Overlay Legend -->
+                    <div id="analysis-legend" class="p-2 mb-3 bg-dark rounded border border-secondary text-center" style="display: none;">
+                        <span class="small fw-semibold text-secondary me-3">Overlay colors:</span>
+                        <span class="badge text-white me-2" style="background-color: rgba(16, 185, 129, 0.85) !important;">🟢 Ideal Green</span>
+                        <span class="badge text-white me-2" style="background-color: #f43f5e !important;">🔴 Hotspots (Overexposure)</span>
+                        <span class="badge text-white" style="background-color: #0ea5e9 !important;">🔵 Shadows / Wrinkles</span>
+                    </div>
+
+                    <div id="analysis-results" class="p-3 bg-dark rounded border border-secondary" style="display: none;">
+                        <h5 class="text-success mb-2">📊 Diagnostic Analysis</h5>
+                        <div class="row text-center mb-3">
+                            <div class="col-4 border-end border-secondary">
+                                <span class="d-block text-secondary" style="font-size: 10px;">Uniformity</span>
+                                <strong class="text-white" id="an-uniformity">-%</strong>
+                            </div>
+                            <div class="col-4 border-end border-secondary">
+                                <span class="d-block text-secondary" style="font-size: 10px;">Hotspots</span>
+                                <strong class="text-warning" id="an-hotspots">-%</strong>
+                            </div>
+                            <div class="col-4">
+                                <span class="d-block text-secondary" style="font-size: 10px;">Shadows</span>
+                                <strong class="text-danger" id="an-shadows">-%</strong>
+                            </div>
+                        </div>
+                        <p class="mb-0 text-secondary" style="font-size: 11px; line-height: 1.3;" id="an-diagnosis">Upload a photo to see improvements recommended for your setup.</p>
                     </div>
                 </div>
             </div>
@@ -455,11 +592,12 @@
                             
                             <!-- Window at Y = 30 (Top 0.0m) -->
                             <rect x="110" y="24" width="120" height="6" rx="2" fill="#38bdf8" filter="drop-shadow(0px 0px 4px rgba(56,189,248,0.7))" />
-                            <text x="170" y="15" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">WINDOW (0.0m)</text>
-
-                            <!-- Green Screen & Door at Y = 550 (Bottom 4.0m) -->
-                            <rect x="40" y="550" width="260" height="8" rx="2" fill="#22c55e" filter="drop-shadow(0px 0px 4px rgba(34,197,94,0.7))" />
-                            <text x="170" y="575" fill="#22c55e" font-size="12" font-weight="bold" text-anchor="middle">GREEN SCREEN & DOOR (4.0m)</text>
+                            
+                            <!-- Green Screen & Door (Interactive Draggable) -->
+                            <g id="svg-green-screen-group" class="draggable" data-drag-type="greenscreen" style="cursor: ns-resize;">
+                                <rect id="svg-green-screen" x="40" y="550" width="260" height="12" rx="2" fill="#22c55e" filter="drop-shadow(0px 0px 4px rgba(34,197,94,0.7))" />
+                                <text id="svg-green-screen-text" x="170" y="575" fill="#22c55e" font-size="12" font-weight="bold" text-anchor="middle">GREEN SCREEN & DOOR (4.0m)</text>
+                            </g>
 
                             <!-- Light Beams Cones (Rendered below subjects) -->
                             <!-- Key Light cone (placed at Y=1.6m (238px), X=0.5m (105px)) -->
@@ -474,16 +612,16 @@
                             <!-- Cast Shadow from subject onto Green Screen if too close -->
                             <ellipse id="wall-shadow" cx="170" cy="550" rx="30" ry="12" fill="url(#shadow-gradient)" opacity="0" />
 
-                            <!-- Subject Node (Interactive Slider Controlled) -->
-                            <g id="subject-node" transform="translate(170, 342)">
+                            <!-- Subject Node (Interactive Draggable) -->
+                            <g id="subject-node" transform="translate(170, 342)" class="draggable" data-drag-type="subject" style="cursor: grab;">
                                 <circle cx="0" cy="0" r="18" fill="#3b82f6" stroke="#ffffff" stroke-width="2" />
                                 <text cx="0" cy="0" dy="4" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">SUBJ</text>
                                 <!-- Arrow pointer representing orientation facing camera (points UP) -->
                                 <polygon points="0,-22 -6,-14 6,-14" fill="#ffffff" />
                             </g>
 
-                            <!-- Camera Node (Interactive Slider Controlled) -->
-                            <g id="camera-node" transform="translate(170, 82)">
+                            <!-- Camera Node (Interactive Draggable) -->
+                            <g id="camera-node" transform="translate(170, 82)" class="draggable" data-drag-type="camera" style="cursor: grab;">
                                 <rect x="-16" y="-12" width="32" height="24" rx="3" fill="#cbd5e1" stroke="#475569" stroke-width="2" />
                                 <circle cx="0" cy="6" r="5" fill="#0f172a" />
                                 <!-- Arrow points DOWN -->
@@ -491,24 +629,24 @@
                                 <text x="0" y="-18" fill="#60a5fa" font-size="10" font-weight="bold" text-anchor="middle">SONY ZV-1</text>
                             </g>
 
-                            <!-- Lights Icons (Static, but glow matching state) -->
+                            <!-- Lights Icons (Interactive Draggable, glow matching state) -->
                             <!-- Key Light X=0.5m (105px), Y=1.6m (238px) -->
-                            <g id="svg-key-light" transform="translate(105, 238)">
+                            <g id="svg-key-light" transform="translate(105, 238)" class="draggable" data-drag-type="key" style="cursor: grab;">
                                 <circle cx="0" cy="0" r="14" fill="#0f172a" stroke="#fdba74" stroke-width="2" id="svg-key-circle" />
                                 <text x="0" y="4" fill="#fdba74" font-size="10" font-weight="bold" text-anchor="middle">KEY</text>
                             </g>
                             <!-- Fill Light X=1.5m (235px), Y=1.6m (238px) -->
-                            <g id="svg-fill-light" transform="translate(235, 238)">
+                            <g id="svg-fill-light" transform="translate(235, 238)" class="draggable" data-drag-type="fill" style="cursor: grab;">
                                 <circle cx="0" cy="0" r="14" fill="#0f172a" stroke="#bae6fd" stroke-width="2" id="svg-fill-circle" />
                                 <text x="0" y="4" fill="#bae6fd" font-size="10" font-weight="bold" text-anchor="middle">FILL</text>
                             </g>
                             <!-- Rim Light X=0.8m (118px), Y=3.2m (446px) -->
-                            <g id="svg-rim-light" transform="translate(118, 446)">
+                            <g id="svg-rim-light" transform="translate(118, 446)" class="draggable" data-drag-type="rim" style="cursor: grab;">
                                 <circle cx="0" cy="0" r="14" fill="#0f172a" stroke="#e9d5ff" stroke-width="2" id="svg-rim-circle" />
                                 <text x="0" y="4" fill="#e9d5ff" font-size="10" font-weight="bold" text-anchor="middle">RIM</text>
                             </g>
                             <!-- Green Screen Wash Light X=1.0m (170px), Y=3.2m (446px) -->
-                            <g id="svg-gs-light" transform="translate(170, 446)" opacity="0.3" style="transition: opacity 0.3s ease;">
+                            <g id="svg-gs-light" transform="translate(170, 446)" opacity="0.3" style="transition: opacity 0.3s ease;" class="draggable" data-drag-type="gslight" style="cursor: grab;">
                                 <circle cx="0" cy="0" r="14" fill="#0f172a" stroke="#22c55e" stroke-width="2" id="svg-gs-circle" />
                                 <text x="0" y="4" fill="#22c55e" font-size="9" font-weight="bold" text-anchor="middle">GS LGT</text>
                             </g>
@@ -609,7 +747,7 @@
     <script>
         // State variables
         const state = {
-            subjDist: 1.6, // from screen (0m)
+            subjDist: 1.6, // from screen
             camDist: 3.6, // from screen
             keyOn: true,
             fillOn: true,
@@ -619,10 +757,20 @@
             keyIntensity: 80,
             fillIntensity: 50,
             rimIntensity: 70,
-            gsIntensity: 70
+            gsIntensity: 70,
+            // Customizable positions
+            gsY: 4.0,
+            keyX: 0.5,
+            keyY: 1.6,
+            fillX: 1.5,
+            fillY: 1.6,
+            rimX: 0.8,
+            rimY: 3.2,
+            gsLightX: 1.0,
+            gsLightY: 3.2
         };
 
-        // DOM elements
+        // Setup Slider variables (previously undeclared)
         const subjDistSlider = document.getElementById('subj-dist');
         const subjDistVal = document.getElementById('subj-dist-val');
         const camDistSlider = document.getElementById('cam-dist');
@@ -646,6 +794,26 @@
         const rimIntensityVal = document.getElementById('rim-intensity-val');
         const gsIntensitySlider = document.getElementById('gs-intensity');
         const gsIntensityVal = document.getElementById('gs-intensity-val');
+
+        // Position Sliders
+        const posGsYSlider = document.getElementById('pos-gs-y');
+        const posGsYVal = document.getElementById('pos-gs-y-val');
+        const posKeyXSlider = document.getElementById('pos-key-x');
+        const posKeyXVal = document.getElementById('pos-key-x-val');
+        const posKeyYSlider = document.getElementById('pos-key-y');
+        const posKeyYVal = document.getElementById('pos-key-y-val');
+        const posFillXSlider = document.getElementById('pos-fill-x');
+        const posFillXVal = document.getElementById('pos-fill-x-val');
+        const posFillYSlider = document.getElementById('pos-fill-y');
+        const posFillYVal = document.getElementById('pos-fill-y-val');
+        const posRimXSlider = document.getElementById('pos-rim-x');
+        const posRimXVal = document.getElementById('pos-rim-x-val');
+        const posRimYSlider = document.getElementById('pos-rim-y');
+        const posRimYVal = document.getElementById('pos-rim-y-val');
+        const posGsLightXSlider = document.getElementById('pos-gs-light-x');
+        const posGsLightXVal = document.getElementById('pos-gs-light-x-val');
+        const posGsLightYSlider = document.getElementById('pos-gs-light-y');
+        const posGsLightYVal = document.getElementById('pos-gs-light-y-val');
 
         // Quality Gauge Elements
         const qualityBadge = document.getElementById('quality-badge');
@@ -685,39 +853,89 @@
 
         const coordCamY = document.getElementById('coord-cam-y');
         const coordSubjY = document.getElementById('coord-subj-y');
+        const coordKeyX = document.getElementById('coord-key-x');
+        const coordKeyY = document.getElementById('coord-key-y');
+        const coordFillX = document.getElementById('coord-fill-x');
+        const coordFillY = document.getElementById('coord-fill-y');
+        const coordRimX = document.getElementById('coord-rim-x');
+        const coordRimY = document.getElementById('coord-rim-y');
+        const coordGsLightX = document.getElementById('coord-gs-light-x');
+        const coordGsLightY = document.getElementById('coord-gs-light-y');
+        const coordGsY = document.getElementById('coord-gs-y');
 
         function updateSimulation() {
-            // Update values
+            // Update slider text displays
             subjDistVal.textContent = state.subjDist.toFixed(1) + ' meters';
             camDistVal.textContent = state.camDist.toFixed(1) + ' meters';
             camDistText.textContent = state.camDist.toFixed(1) + 'm';
-
-            // Calculate metric coordinates (0.0m at the window/top, 4.0m at the screen/bottom)
-            const metricSubjY = 4.0 - state.subjDist;
-            const metricCamY = 4.0 - state.camDist;
-            if (coordSubjY) coordSubjY.textContent = metricSubjY.toFixed(1) + 'm';
-            if (coordCamY) coordCamY.textContent = metricCamY.toFixed(1) + 'm';
-
-            // Update slider text displays
             gsMaterialVal.textContent = state.gsMaterialQuality + '%';
             keyIntensityVal.textContent = state.keyIntensity + '%';
             fillIntensityVal.textContent = state.fillIntensity + '%';
             rimIntensityVal.textContent = state.rimIntensity + '%';
             gsIntensityVal.textContent = state.gsIntensity + '%';
 
+            // Update advanced positions text displays
+            posGsYVal.textContent = state.gsY.toFixed(1) + 'm';
+            posKeyXVal.textContent = state.keyX.toFixed(2) + 'm';
+            posKeyYVal.textContent = state.keyY.toFixed(2) + 'm';
+            posFillXVal.textContent = state.fillX.toFixed(2) + 'm';
+            posFillYVal.textContent = state.fillY.toFixed(2) + 'm';
+            posRimXVal.textContent = state.rimX.toFixed(2) + 'm';
+            posRimYVal.textContent = state.rimY.toFixed(2) + 'm';
+            posGsLightXVal.textContent = state.gsLightX.toFixed(2) + 'm';
+            posGsLightYVal.textContent = state.gsLightY.toFixed(2) + 'm';
+
+            // Calculate metric coordinates (0.0m at the window/top, gsY at the screen/bottom)
+            const metricSubjY = state.gsY - state.subjDist;
+            const metricCamY = state.gsY - state.camDist;
+            if (coordSubjY) coordSubjY.textContent = metricSubjY.toFixed(1) + 'm';
+            if (coordCamY) coordCamY.textContent = metricCamY.toFixed(1) + 'm';
+            if (coordKeyX) coordKeyX.textContent = state.keyX.toFixed(1) + 'm';
+            if (coordKeyY) coordKeyY.textContent = state.keyY.toFixed(1) + 'm';
+            if (coordFillX) coordFillX.textContent = state.fillX.toFixed(1) + 'm';
+            if (coordFillY) coordFillY.textContent = state.fillY.toFixed(1) + 'm';
+            if (coordRimX) coordRimX.textContent = state.rimX.toFixed(1) + 'm';
+            if (coordRimY) coordRimY.textContent = state.rimY.toFixed(1) + 'm';
+            if (coordGsLightX) coordGsLightX.textContent = state.gsLightX.toFixed(1) + 'm';
+            if (coordGsLightY) coordGsLightY.textContent = state.gsLightY.toFixed(1) + 'm';
+            if (coordGsY) coordGsY.textContent = state.gsY.toFixed(1) + 'm';
+
             // Calculate SVG coordinates
-            const subjY = yOffset + ((4.0 - state.subjDist) * scale);
-            const camY = yOffset + ((4.0 - state.camDist) * scale);
+            const subjY = yOffset + ((state.gsY - state.subjDist) * scale);
+            const camY = yOffset + ((state.gsY - state.camDist) * scale);
+            const gsY = yOffset + (state.gsY * scale);
 
             // Move SVG nodes
             subjectNode.setAttribute('transform', `translate(${xCenter}, ${subjY})`);
             cameraNode.setAttribute('transform', `translate(${xCenter}, ${camY})`);
 
+            // Move Green Screen wall
+            const svgGS = document.getElementById('svg-green-screen');
+            const svgGSText = document.getElementById('svg-green-screen-text');
+            if (svgGS) svgGS.setAttribute('y', gsY);
+            if (svgGSText) svgGSText.setAttribute('y', gsY + 25);
+
+            // Calculate Light node pixel coordinates
+            const keyX = 40 + (state.keyX * scale);
+            const keyY = yOffset + (state.keyY * scale);
+            const fillX = 40 + (state.fillX * scale);
+            const fillY = yOffset + (state.fillY * scale);
+            const rimX = 40 + (state.rimX * scale);
+            const rimY = yOffset + (state.rimY * scale);
+            const gsLightX = 40 + (state.gsLightX * scale);
+            const gsLightY = yOffset + (state.gsLightY * scale);
+
+            // Move Light nodes inside SVG floor plan
+            svgKeyCircle.parentElement.setAttribute('transform', `translate(${keyX}, ${keyY})`);
+            svgFillCircle.parentElement.setAttribute('transform', `translate(${fillX}, ${fillY})`);
+            svgRimCircle.parentElement.setAttribute('transform', `translate(${rimX}, ${rimY})`);
+            svgGsCircle.parentElement.setAttribute('transform', `translate(${gsLightX}, ${gsLightY})`);
+
             // Handle Light beam cones matching subject position and intensities
-            // Key Light beam pointing from (105, 238) to subject
+            // Key Light beam pointing from Key node to subject
             if (state.keyOn && state.keyIntensity > 0) {
                 keyBeamCone.style.opacity = (state.keyIntensity / 100) * 0.7;
-                keyBeamCone.setAttribute('d', `M 105 238 L ${xCenter - 25} ${subjY} L ${xCenter + 20} ${subjY} Z`);
+                keyBeamCone.setAttribute('d', `M ${keyX} ${keyY} L ${xCenter - 25} ${subjY} L ${xCenter + 20} ${subjY} Z`);
                 svgKeyCircle.setAttribute('fill', '#fef08a');
                 keyHighlight.style.display = 'block';
                 keyHighlight.setAttribute('opacity', (state.keyIntensity / 100) * 0.4);
@@ -727,10 +945,10 @@
                 keyHighlight.style.display = 'none';
             }
 
-            // Fill Light beam pointing from (235, 238) to subject
+            // Fill Light beam pointing from Fill node to subject
             if (state.fillOn && state.fillIntensity > 0) {
                 fillBeamCone.style.opacity = (state.fillIntensity / 100) * 0.6;
-                fillBeamCone.setAttribute('d', `M 235 238 L ${xCenter - 20} ${subjY} L ${xCenter + 25} ${subjY} Z`);
+                fillBeamCone.setAttribute('d', `M ${fillX} ${fillY} L ${xCenter - 20} ${subjY} L ${xCenter + 25} ${subjY} Z`);
                 svgFillCircle.setAttribute('fill', '#bae6fd');
                 fillHighlight.style.display = 'block';
                 fillHighlight.setAttribute('opacity', (state.fillIntensity / 100) * 0.3);
@@ -740,10 +958,10 @@
                 fillHighlight.style.display = 'none';
             }
 
-            // Rim Light beam pointing from (118, 446) to back of subject (facing UP, back is Y + 10)
+            // Rim Light beam pointing from Rim node to back of subject (facing UP, back is Y + 10)
             if (state.rimOn && state.rimIntensity > 0) {
                 rimBeamCone.style.opacity = (state.rimIntensity / 100) * 0.55;
-                rimBeamCone.setAttribute('d', `M 118 446 L ${xCenter - 20} ${subjY + 10} L ${xCenter + 20} ${subjY + 10} Z`);
+                rimBeamCone.setAttribute('d', `M ${rimX} ${rimY} L ${xCenter - 20} ${subjY + 10} L ${xCenter + 20} ${subjY + 10} Z`);
                 svgRimCircle.setAttribute('fill', '#e9d5ff');
                 rimHighlight.setAttribute('opacity', (state.rimIntensity / 100) * 0.85);
             } else {
@@ -752,9 +970,10 @@
                 rimHighlight.setAttribute('opacity', '0');
             }
 
-            // Green Screen Light beam pointing from (170, 446) down at green screen (550px)
+            // Green Screen Light beam pointing from GS Wash node down at green screen (gsY)
             if (state.gsLightOn && state.gsIntensity > 0) {
                 gsBeamCone.style.opacity = (state.gsIntensity / 100) * 0.65;
+                gsBeamCone.setAttribute('d', `M ${gsLightX} ${gsLightY} L 40 ${gsY} L 300 ${gsY} Z`);
                 svgGsCircle.setAttribute('fill', '#22c55e');
                 svgGsLightGroup.style.opacity = '1';
             } else {
@@ -893,6 +1112,11 @@
             if (state.fillOn) { r += 20; g += 20; b += 40; }
             bodyPath.setAttribute('fill', `rgb(${Math.min(r, 255)}, ${Math.min(g, 255)}, ${Math.min(b, 255)})`);
             headCircle.setAttribute('fill', `rgb(${Math.min(r, 255)}, ${Math.min(g, 255)}, ${Math.min(b, 255)})`);
+
+            // Save state to cookie
+            if (typeof saveStateToCookie === 'function') {
+                saveStateToCookie();
+            }
         }
 
         // Add event listeners
@@ -971,7 +1195,383 @@
             updateSimulation();
         });
 
+        // Advanced positions sliders event listeners
+        posGsYSlider.addEventListener('input', (e) => {
+            state.gsY = parseFloat(e.target.value);
+            // Cap subject/camera position relative to GS Y
+            if (state.subjDist >= state.gsY - 0.5) {
+                state.subjDist = state.gsY - 0.5;
+                subjDistSlider.value = state.subjDist;
+            }
+            updateSimulation();
+        });
+        posKeyXSlider.addEventListener('input', (e) => {
+            state.keyX = parseFloat(e.target.value);
+            updateSimulation();
+        });
+        posKeyYSlider.addEventListener('input', (e) => {
+            state.keyY = parseFloat(e.target.value);
+            updateSimulation();
+        });
+        posFillXSlider.addEventListener('input', (e) => {
+            state.fillX = parseFloat(e.target.value);
+            updateSimulation();
+        });
+        posFillYSlider.addEventListener('input', (e) => {
+            state.fillY = parseFloat(e.target.value);
+            updateSimulation();
+        });
+        posRimXSlider.addEventListener('input', (e) => {
+            state.rimX = parseFloat(e.target.value);
+            updateSimulation();
+        });
+        posRimYSlider.addEventListener('input', (e) => {
+            state.rimY = parseFloat(e.target.value);
+            updateSimulation();
+        });
+        posGsLightXSlider.addEventListener('input', (e) => {
+            state.gsLightX = parseFloat(e.target.value);
+            updateSimulation();
+        });
+        posGsLightYSlider.addEventListener('input', (e) => {
+            state.gsLightY = parseFloat(e.target.value);
+            updateSimulation();
+        });
+
+        // Cookie Helper Utilities
+        function saveStateToCookie() {
+            setCookie('gs_helper_state', state, 30);
+        }
+
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                let date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (JSON.stringify(value) || "")  + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            let nameEQ = name + "=";
+            let ca = document.cookie.split(';');
+            for(let i=0;i < ca.length;i++) {
+                let c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                if (c.indexOf(nameEQ) == 0) {
+                    try {
+                        return JSON.parse(c.substring(nameEQ.length,c.length));
+                    } catch(e) {
+                        return null;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function eraseCookie(name) {
+            document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        }
+
+        // Reset Settings click listener
+        document.getElementById('btn-reset-layout').addEventListener('click', () => {
+            eraseCookie('gs_helper_state');
+            window.location.reload();
+        });
+
+        // --- SVG DRAG & DROP LOGIC ---
+        let selectedElement = null;
+        let dragType = null;
+
+        function makeDraggable(svg) {
+            svg.addEventListener('mousedown', startDrag);
+            svg.addEventListener('mousemove', drag);
+            svg.addEventListener('mouseup', endDrag);
+            svg.addEventListener('mouseleave', endDrag);
+
+            svg.addEventListener('touchstart', startDrag, {passive: false});
+            svg.addEventListener('touchmove', drag, {passive: false});
+            svg.addEventListener('touchend', endDrag);
+            svg.addEventListener('touchcancel', endDrag);
+
+            function getMousePosition(evt) {
+                const CTM = svg.getScreenCTM();
+                if (evt.touches) { evt = evt.touches[0]; }
+                return {
+                    x: (evt.clientX - CTM.e) / CTM.a,
+                    y: (evt.clientY - CTM.f) / CTM.d
+                };
+            }
+
+            function startDrag(evt) {
+                let target = evt.target;
+                while (target && target !== svg) {
+                    if (target.classList && target.classList.contains('draggable')) {
+                        selectedElement = target;
+                        dragType = target.getAttribute('data-drag-type');
+                        evt.preventDefault();
+                        break;
+                    }
+                    target = target.parentNode;
+                }
+            }
+
+            function drag(evt) {
+                if (!selectedElement) return;
+                evt.preventDefault();
+                const coord = getMousePosition(evt);
+                
+                // Convert SVG pixel coordinate back to room meters
+                // Width: 2.0m mapping from X=40 to X=300 (range of 260px, scale=130px/m)
+                // Height: 4.0m mapping from Y=30 to Y=550 (range of 520px, scale=130px/m)
+                let xMeters = (coord.x - 40) / 130;
+                let yMeters = (coord.y - 30) / 130;
+
+                if (dragType === 'key') {
+                    state.keyX = Math.max(0.1, Math.min(1.9, xMeters));
+                    state.keyY = Math.max(0.1, Math.min(3.9, yMeters));
+                    posKeyXSlider.value = state.keyX;
+                    posKeyYSlider.value = state.keyY;
+                } else if (dragType === 'fill') {
+                    state.fillX = Math.max(0.1, Math.min(1.9, xMeters));
+                    state.fillY = Math.max(0.1, Math.min(3.9, yMeters));
+                    posFillXSlider.value = state.fillX;
+                    posFillYSlider.value = state.fillY;
+                } else if (dragType === 'rim') {
+                    state.rimX = Math.max(0.1, Math.min(1.9, xMeters));
+                    state.rimY = Math.max(0.1, Math.min(3.9, yMeters));
+                    posRimXSlider.value = state.rimX;
+                    posRimYSlider.value = state.rimY;
+                } else if (dragType === 'gslight') {
+                    state.gsLightX = Math.max(0.1, Math.min(1.9, xMeters));
+                    state.gsLightY = Math.max(0.1, Math.min(3.9, yMeters));
+                    posGsLightXSlider.value = state.gsLightX;
+                    posGsLightYSlider.value = state.gsLightY;
+                } else if (dragType === 'subject') {
+                    // Subject centers horizontally, moves vertically
+                    let proposedDist = state.gsY - yMeters;
+                    proposedDist = Math.max(0.5, Math.min(3.0, proposedDist));
+                    
+                    if (proposedDist <= state.camDist - 0.5) {
+                        state.subjDist = proposedDist;
+                        subjDistSlider.value = state.subjDist;
+                    }
+                } else if (dragType === 'camera') {
+                    // Camera centers horizontally, moves vertically
+                    let proposedDist = state.gsY - yMeters;
+                    proposedDist = Math.max(2.5, Math.min(4.0, proposedDist));
+                    
+                    if (proposedDist >= state.subjDist + 0.5) {
+                        state.camDist = proposedDist;
+                        camDistSlider.value = state.camDist;
+                    }
+                } else if (dragType === 'greenscreen') {
+                    // Green Screen moves vertically
+                    state.gsY = Math.max(3.0, Math.min(4.0, yMeters));
+                    posGsYSlider.value = state.gsY;
+
+                    if (state.subjDist >= state.gsY - 0.5) {
+                        state.subjDist = state.gsY - 0.5;
+                        subjDistSlider.value = state.subjDist;
+                    }
+                    if (state.camDist >= state.gsY) {
+                        state.camDist = state.gsY;
+                        camDistSlider.value = state.camDist;
+                    }
+                }
+                updateSimulation();
+            }
+
+            function endDrag(evt) {
+                selectedElement = null;
+                dragType = null;
+            }
+        }
+
+        // Initialize drag events on SVG
+        makeDraggable(document.getElementById('room-svg'));
+
+        // Sync inputs with loaded cookie state
+        function loadSavedState() {
+            const savedState = getCookie('gs_helper_state');
+            if (savedState) {
+                Object.assign(state, savedState);
+                
+                // Sync sliders and toggles
+                subjDistSlider.value = state.subjDist;
+                camDistSlider.value = state.camDist;
+                toggleKey.checked = state.keyOn;
+                toggleFill.checked = state.fillOn;
+                toggleRim.checked = state.rimOn;
+                toggleGsLight.checked = state.gsLightOn;
+                gsMaterialSlider.value = state.gsMaterialQuality;
+                keyIntensitySlider.value = state.keyIntensity;
+                fillIntensitySlider.value = state.fillIntensity;
+                rimIntensitySlider.value = state.rimIntensity;
+                gsIntensitySlider.value = state.gsIntensity;
+
+                // Sync position sliders
+                posGsYSlider.value = state.gsY;
+                posKeyXSlider.value = state.keyX;
+                posKeyYSlider.value = state.keyY;
+                posFillXSlider.value = state.fillX;
+                posFillYSlider.value = state.fillY;
+                posRimXSlider.value = state.rimX;
+                posRimYSlider.value = state.rimY;
+                posGsLightXSlider.value = state.gsLightX;
+                posGsLightYSlider.value = state.gsLightY;
+
+                // Sync badge texts
+                document.querySelector('.badge-key').textContent = state.keyOn ? 'On' : 'Off';
+                document.querySelector('.badge-fill').textContent = state.fillOn ? 'On' : 'Off';
+                document.querySelector('.badge-rim').textContent = state.rimOn ? 'On' : 'Off';
+                badgeGsLight.textContent = state.gsLightOn ? 'On' : 'Off';
+                badgeGsLight.className = state.gsLightOn ? "light-badge bg-success text-white" : "light-badge bg-secondary text-white";
+            }
+        }
+
+        // Image Uploader & Client-side Color Analyzer
+        const imageUpload = document.getElementById('image-upload');
+        const analysisCanvas = document.getElementById('analysis-canvas');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+        const analysisResults = document.getElementById('analysis-results');
+
+        const anUniformity = document.getElementById('an-uniformity');
+        const anHotspots = document.getElementById('an-hotspots');
+        const anShadows = document.getElementById('an-shadows');
+        const anDiagnosis = document.getElementById('an-diagnosis');
+
+        imageUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const maxW = 500;
+                    const scaleFactor = img.width > maxW ? maxW / img.width : 1;
+                    analysisCanvas.width = img.width * scaleFactor;
+                    analysisCanvas.height = img.height * scaleFactor;
+                    
+                    const ctx = analysisCanvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, analysisCanvas.width, analysisCanvas.height);
+                    
+                    const imgData = ctx.getImageData(0, 0, analysisCanvas.width, analysisCanvas.height);
+                    const data = imgData.data;
+                    
+                    let totalGreenPixels = 0;
+                    let shadowsCount = 0;
+                    let hotspotsCount = 0;
+                    let goodGreenCount = 0;
+                    let greenBrightnesses = [];
+
+                    for (let i = 0; i < data.length; i += 16) {
+                        const r = data[i];
+                        const g = data[i+1];
+                        const b = data[i+2];
+                        
+                        const rNorm = r / 255;
+                        const gNorm = g / 255;
+                        const bNorm = b / 255;
+                        
+                        const max = Math.max(rNorm, gNorm, bNorm);
+                        const min = Math.min(rNorm, gNorm, bNorm);
+                        let h, s, l = (max + min) / 2;
+                        
+                        if (max === min) {
+                            h = s = 0;
+                        } else {
+                            const d = max - min;
+                            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                            switch (max) {
+                                case rNorm: h = (gNorm - bNorm) / d + (gNorm < bNorm ? 6 : 0); break;
+                                case gNorm: h = (bNorm - rNorm) / d + 2; break;
+                                case bNorm: h = (rNorm - gNorm) / d + 4; break;
+                            }
+                            h /= 6;
+                        }
+                        
+                        const hueDegrees = h * 360;
+                        
+                        // Detect green background shades (80 to 165 degrees)
+                        if (hueDegrees >= 80 && hueDegrees <= 165 && s > 0.15) {
+                            totalGreenPixels++;
+                            greenBrightnesses.push(l * 100);
+                            
+                            if (l < 0.28) {
+                                shadowsCount++;
+                                // Paint overlay blue for shadows
+                                data[i] = 14;
+                                data[i+1] = 165;
+                                data[i+2] = 233;
+                            } else if (l > 0.82 || s < 0.25) {
+                                hotspotsCount++;
+                                // Paint overlay red for hot-spots
+                                data[i] = 244;
+                                data[i+1] = 63;
+                                data[i+2] = 94;
+                            } else {
+                                goodGreenCount++;
+                                // Highlight good green
+                                data[i] = Math.round(r * 0.4);
+                                data[i+1] = Math.round(g * 1.3);
+                                data[i+2] = Math.round(b * 0.4);
+                            }
+                        }
+                    }
+                    
+                    ctx.putImageData(imgData, 0, 0);
+                    
+                    analysisCanvas.style.display = 'block';
+                    uploadPlaceholder.style.display = 'none';
+                    analysisResults.style.display = 'block';
+                    document.getElementById('analysis-legend').style.display = 'block';
+                    
+                    if (totalGreenPixels > 0) {
+                        const shadowPct = Math.round((shadowsCount / totalGreenPixels) * 100);
+                        const hotspotPct = Math.round((hotspotsCount / totalGreenPixels) * 100);
+                        
+                        const meanBrightness = greenBrightnesses.reduce((a,b)=>a+b, 0) / greenBrightnesses.length;
+                        const variance = greenBrightnesses.reduce((a,b)=>a + Math.pow(b - meanBrightness, 2), 0) / greenBrightnesses.length;
+                        const stdDev = Math.sqrt(variance);
+                        
+                        let uniformityScore = Math.round(100 - (stdDev * 3));
+                        uniformityScore = Math.max(10, Math.min(100, uniformityScore));
+                        
+                        anUniformity.textContent = uniformityScore + '%';
+                        anHotspots.textContent = hotspotPct + '%';
+                        anShadows.textContent = shadowPct + '%';
+                        
+                        let tips = [];
+                        if (uniformityScore < 75) tips.push("Backdrop lighting is uneven. Baffle lights or diffuse source panels");
+                        if (shadowPct > 15) tips.push("Heavy wrinkles or subject shadows detected (marked in Blue)");
+                        if (hotspotPct > 10) tips.push("Overexposed highlights or white spots detected (marked in Red)");
+                        
+                        if (uniformityScore >= 80 && shadowPct < 8 && hotspotPct < 5) {
+                            anDiagnosis.textContent = "Excellent green screen image! The lighting is smooth and easy to key.";
+                            anDiagnosis.className = "mb-0 text-success small";
+                        } else {
+                            anDiagnosis.textContent = "Adjustments: " + tips.join(". ") + ".";
+                            anDiagnosis.className = "mb-0 text-warning small";
+                        }
+                    } else {
+                        anUniformity.textContent = "0%";
+                        anHotspots.textContent = "0%";
+                        anShadows.textContent = "0%";
+                        anDiagnosis.textContent = "No green background detected in this photo. Please make sure the green screen is visible.";
+                        anDiagnosis.className = "mb-0 text-danger small";
+                        document.getElementById('analysis-legend').style.display = 'none';
+                    }
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
         // Initialize simulation
+        loadSavedState();
         updateSimulation();
     </script>
 </body>
