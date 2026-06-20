@@ -189,12 +189,69 @@
                         </div>
                     </div>
 
+                    <!-- Crop Feature Card -->
+                    <div class="card p-3 mb-4" id="crop-controls-card" style="display: none; background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0 text-info fw-bold" style="font-size: 0.95rem;">✂️ Crop & Refine Active Area</h5>
+                            <button class="btn btn-sm btn-outline-info" id="btn-toggle-crop-outline" style="font-size: 0.75rem;">Enable Crop Box</button>
+                        </div>
+                        
+                        <div id="crop-sliders-section" style="display: none;">
+                            <p class="text-secondary small mb-3" style="font-size: 0.8rem; line-height: 1.3;">Adjust sliders to exclude lights, stands, or walls, then apply to re-evaluate the selected green screen zone.</p>
+                            
+                            <!-- Left Crop -->
+                            <div class="mb-2">
+                                <label for="crop-left" class="form-label d-flex justify-content-between small mb-1" style="font-size: 0.8rem;">
+                                    <span>Left Margin:</span>
+                                    <span class="text-info fw-bold" id="crop-left-val">0%</span>
+                                </label>
+                                <input type="range" class="form-range" id="crop-left" min="0" max="45" value="0">
+                            </div>
+
+                            <!-- Right Crop -->
+                            <div class="mb-2">
+                                <label for="crop-right" class="form-label d-flex justify-content-between small mb-1" style="font-size: 0.8rem;">
+                                    <span>Right Margin:</span>
+                                    <span class="text-info fw-bold" id="crop-right-val">0%</span>
+                                </label>
+                                <input type="range" class="form-range" id="crop-right" min="0" max="45" value="0">
+                            </div>
+
+                            <!-- Top Crop -->
+                            <div class="mb-2">
+                                <label for="crop-top" class="form-label d-flex justify-content-between small mb-1" style="font-size: 0.8rem;">
+                                    <span>Top Margin:</span>
+                                    <span class="text-info fw-bold" id="crop-top-val">0%</span>
+                                </label>
+                                <input type="range" class="form-range" id="crop-top" min="0" max="45" value="0">
+                            </div>
+
+                            <!-- Bottom Crop -->
+                            <div class="mb-3">
+                                <label for="crop-bottom" class="form-label d-flex justify-content-between small mb-1" style="font-size: 0.8rem;">
+                                    <span>Bottom Margin:</span>
+                                    <span class="text-info fw-bold" id="crop-bottom-val">0%</span>
+                                </label>
+                                <input type="range" class="form-range" id="crop-bottom" min="0" max="45" value="0">
+                            </div>
+
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <button class="btn btn-info btn-sm w-100 fw-bold text-dark" id="btn-apply-crop" style="font-size: 0.8rem;">Apply Crop Filter</button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="btn btn-outline-secondary btn-sm w-100" id="btn-reset-crop" style="font-size: 0.8rem;">Reset to Full</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Map Overlay Legend -->
                     <div id="analysis-legend" class="p-3 mb-4 bg-dark rounded border border-secondary" style="display: none;">
                         <h6 class="small fw-bold text-secondary mb-2">Heatmap Overlay Legend:</h6>
                         <div class="row g-2 text-start small">
                             <div class="col-6">
-                                <span class="legend-dot" style="background-color: rgba(16, 185, 129, 0.85);"></span>
+                                <span class="legend-dot" style="background-color: rgba(21, 128, 61, 0.95);"></span>
                                 <span>Ideal Green Screen Zone</span>
                             </div>
                             <div class="col-6">
@@ -204,6 +261,16 @@
                             <div class="col-12">
                                 <span class="legend-dot" style="background-color: #0ea5e9;"></span>
                                 <span>Shadow / Wrinkle / Folds</span>
+                            </div>
+                            <div class="col-12 mt-2 pt-2 border-top border-secondary">
+                                <span class="small fw-semibold text-secondary d-block mb-1">Green Lightness Contours (Where Green Changes):</span>
+                                <div class="d-flex justify-content-between text-center font-monospace" style="font-size: 8px;">
+                                    <div class="px-1 py-1 rounded text-white" style="background-color: #104420; width: 19%;">Dark (&lt;40%)</div>
+                                    <div class="px-1 py-1 rounded text-white" style="background-color: #166534; width: 19%;">Med-Dark</div>
+                                    <div class="px-1 py-1 rounded text-white" style="background-color: #15803d; width: 19%;">Ideal (60%)</div>
+                                    <div class="px-1 py-1 rounded text-dark" style="background-color: #22c55e; width: 19%;">Med-Light</div>
+                                    <div class="px-1 py-1 rounded text-dark" style="background-color: #4ade80; width: 19%;">Light (&gt;74%)</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -349,10 +416,17 @@
         const issueFramingList = document.getElementById('issue-framing-list');
 
         let rawImage = null; // Store original uploaded Image object
+        let fullOriginalImage = null; // Backup of the full size uploaded image to reset crop selection
         let heatmapImageData = null; // Store computed heatmap pixels
         let originalImageData = null; // Store computed original pixels
         let activeViewMode = 'overlay'; // 'overlay' or 'original'
         let issueMarkers = []; // Dynamic markers pointing to problem locations
+
+        let cropLeft = 0;
+        let cropRight = 0;
+        let cropTop = 0;
+        let cropBottom = 0;
+        let isCroppingActive = false;
 
         // Global Paste Event Listener
         window.addEventListener('paste', (e) => {
@@ -406,6 +480,19 @@
             reader.onload = function(event) {
                 rawImage = new Image();
                 rawImage.onload = function() {
+                    // Backup original full image to allow resetting the crop region later
+                    fullOriginalImage = rawImage;
+                    
+                    // Reset crop status
+                    cropLeft = 0;
+                    cropRight = 0;
+                    cropTop = 0;
+                    cropBottom = 0;
+                    isCroppingActive = false;
+                    document.getElementById('btn-toggle-crop-outline').textContent = 'Enable Crop Box';
+                    document.getElementById('btn-toggle-crop-outline').className = 'btn btn-sm btn-outline-info';
+                    document.getElementById('crop-sliders-section').style.display = 'none';
+
                     processUploadedImage();
                 };
                 rawImage.src = event.target.result;
@@ -559,10 +646,33 @@
                             cell.sumY += y;
                         } else {
                             goodGreenCount++;
-                            // Green wash overlay
-                            data[idx] = Math.round(r * 0.4);
-                            data[idx+1] = Math.round(g * 1.3);
-                            data[idx+2] = Math.round(b * 0.4);
+                            // Show chroma changes (variations in green) by mapping lightness levels
+                            if (l < 0.40) {
+                                // Dark Green (low exposure)
+                                data[idx] = 16;
+                                data[idx+1] = 68;
+                                data[idx+2] = 32;
+                            } else if (l < 0.52) {
+                                // Medium Dark Green
+                                data[idx] = 22;
+                                data[idx+1] = 101;
+                                data[idx+2] = 52;
+                            } else if (l < 0.65) {
+                                // Ideal Standard Green
+                                data[idx] = 21;
+                                data[idx+1] = 128;
+                                data[idx+2] = 61;
+                            } else if (l < 0.74) {
+                                // Medium Light Lime Green
+                                data[idx] = 34;
+                                data[idx+1] = 197;
+                                data[idx+2] = 94;
+                            } else {
+                                // Very Light Green (approaching hotspot)
+                                data[idx] = 74;
+                                data[idx+1] = 222;
+                                data[idx+2] = 128;
+                            }
                         }
                     }
                 }
@@ -606,7 +716,8 @@
             // Reveal analysis interface cards
             placeholder.style.display = 'none';
             canvas.style.display = 'block';
-            viewControls.style.setAttribute('style', 'display: flex !important;');
+            viewControls.style.setProperty('display', 'flex', 'important');
+            document.getElementById('crop-controls-card').style.display = 'block';
             legendContainer.style.display = 'block';
             statsContainer.style.display = 'flex';
 
@@ -787,6 +898,115 @@
             });
         }
 
+        function drawDiagnosticMarkers(ctx) {
+            if (!issueMarkers || issueMarkers.length === 0) return;
+            
+            issueMarkers.forEach(marker => {
+                let color = '#22c55e'; // default green
+                if (marker.type === 'shadow') {
+                    color = '#0ea5e9'; // Blue shadow color
+                } else if (marker.type === 'hotspot') {
+                    color = '#f43f5e'; // Red hotspot color
+                } else if (marker.type === 'obstruction') {
+                    color = '#eab308'; // Yellow obstruction color
+                }
+
+                // Draw outer glowing circle
+                ctx.beginPath();
+                ctx.arc(marker.x, marker.y, 16, 0, 2 * Math.PI);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2.5;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 8;
+                ctx.stroke();
+
+                // Reset shadow blur
+                ctx.shadowBlur = 0;
+
+                // Draw center pulse circle
+                ctx.beginPath();
+                ctx.arc(marker.x, marker.y, 4, 0, 2 * Math.PI);
+                ctx.fillStyle = color;
+                ctx.fill();
+
+                // Draw connecting dashed line down to badge label
+                ctx.beginPath();
+                ctx.setLineDash([2, 2]);
+                ctx.moveTo(marker.x, marker.y + 4);
+                ctx.lineTo(marker.x, marker.y + 16);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                ctx.setLineDash([]); // clear dash
+
+                // Draw Label Pill
+                ctx.font = 'bold 9px monospace';
+                const labelText = `⚠ ${marker.label}`;
+                const textWidth = ctx.measureText(labelText).width;
+                const rectW = textWidth + 10;
+                const rectH = 14;
+                const rectX = marker.x - rectW / 2;
+                const rectY = marker.y + 16;
+
+                // Round rect background
+                ctx.fillStyle = 'rgba(9, 13, 22, 0.9)';
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1;
+                
+                // Draw rounded background
+                ctx.beginPath();
+                if (ctx.roundRect) {
+                    ctx.roundRect(rectX, rectY, rectW, rectH, 3);
+                } else {
+                    ctx.rect(rectX, rectY, rectW, rectH);
+                }
+                ctx.fill();
+                ctx.stroke();
+
+                // Text
+                ctx.fillStyle = color;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(labelText, marker.x, rectY + rectH / 2 + 1);
+            });
+        }
+
+        function drawCropBoxOutline(ctx) {
+            if (!canvas || !isCroppingActive) return;
+            const w = canvas.width;
+            const h = canvas.height;
+            const x1 = (cropLeft / 100) * w;
+            const x2 = w - (cropRight / 100) * w;
+            const y1 = (cropTop / 100) * h;
+            const y2 = h - (cropBottom / 100) * h;
+
+            // Draw dark mask outside cropped area
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+            // Top banner
+            ctx.fillRect(0, 0, w, y1);
+            // Bottom banner
+            ctx.fillRect(0, y2, w, h - y2);
+            // Left banner
+            ctx.fillRect(0, y1, x1, y2 - y1);
+            // Right banner
+            ctx.fillRect(x2, y1, w - x2, y2 - y1);
+
+            // Draw crop border
+            ctx.strokeStyle = '#0ea5e9'; // Blue crop lines
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 4]);
+            ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+            ctx.setLineDash([]); // clear dash
+
+            // Draw corner grab handles
+            ctx.fillStyle = '#0ea5e9';
+            const hs = 6;
+            ctx.fillRect(x1 - hs/2, y1 - hs/2, hs, hs);
+            ctx.fillRect(x2 - hs/2, y1 - hs/2, hs, hs);
+            ctx.fillRect(x1 - hs/2, y2 - hs/2, hs, hs);
+            ctx.fillRect(x2 - hs/2, y2 - hs/2, hs, hs);
+        }
+
         function renderCanvasView() {
             if (!canvas || !originalImageData || !heatmapImageData) return;
             const ctx = canvas.getContext('2d');
@@ -797,6 +1017,8 @@
             }
             // Render vector warning crosshairs on both screens
             drawDiagnosticMarkers(ctx);
+            // Render Crop boundary lines if active
+            drawCropBoxOutline(ctx);
         }
 
         // View Mode Event Toggles
@@ -812,6 +1034,133 @@
             btnShowOriginal.classList.add('active');
             btnShowOverlay.classList.remove('active');
             renderCanvasView();
+        });
+
+        // --- CROP EVENT CONTROLS ---
+        const btnToggleCrop = document.getElementById('btn-toggle-crop-outline');
+        const cropSlidersSection = document.getElementById('crop-sliders-section');
+        const cropLeftSlider = document.getElementById('crop-left');
+        const cropRightSlider = document.getElementById('crop-right');
+        const cropTopSlider = document.getElementById('crop-top');
+        const cropBottomSlider = document.getElementById('crop-bottom');
+        const btnApplyCrop = document.getElementById('btn-apply-crop');
+        const btnResetCrop = document.getElementById('btn-reset-crop');
+
+        btnToggleCrop.addEventListener('click', () => {
+            isCroppingActive = !isCroppingActive;
+            if (isCroppingActive) {
+                btnToggleCrop.textContent = 'Hide Crop Box';
+                btnToggleCrop.className = 'btn btn-sm btn-info text-dark';
+                cropSlidersSection.style.display = 'block';
+            } else {
+                btnToggleCrop.textContent = 'Enable Crop Box';
+                btnToggleCrop.className = 'btn btn-sm btn-outline-info';
+                cropSlidersSection.style.display = 'none';
+            }
+            renderCanvasView();
+        });
+
+        cropLeftSlider.addEventListener('input', (e) => {
+            cropLeft = parseInt(e.target.value);
+            document.getElementById('crop-left-val').textContent = cropLeft + '%';
+            renderCanvasView();
+        });
+
+        cropRightSlider.addEventListener('input', (e) => {
+            cropRight = parseInt(e.target.value);
+            document.getElementById('crop-right-val').textContent = cropRight + '%';
+            renderCanvasView();
+        });
+
+        cropTopSlider.addEventListener('input', (e) => {
+            cropTop = parseInt(e.target.value);
+            document.getElementById('crop-top-val').textContent = cropTop + '%';
+            renderCanvasView();
+        });
+
+        cropBottomSlider.addEventListener('input', (e) => {
+            cropBottom = parseInt(e.target.value);
+            document.getElementById('crop-bottom-val').textContent = cropBottom + '%';
+            renderCanvasView();
+        });
+
+        btnApplyCrop.addEventListener('click', () => {
+            if (!rawImage) return;
+            const w = canvas.width;
+            const h = canvas.height;
+            const x1 = (cropLeft / 100) * w;
+            const x2 = w - (cropRight / 100) * w;
+            const y1 = (cropTop / 100) * h;
+            const y2 = h - (cropBottom / 100) * h;
+
+            const cropW = x2 - x1;
+            const cropH = y2 - y1;
+            if (cropW <= 20 || cropH <= 20) return; // Ignore too small crop
+
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = cropW;
+            tempCanvas.height = cropH;
+            const tempCtx = tempCanvas.getContext('2d');
+
+            // Draw cropped portion from raw original image
+            const backupCanvas = document.createElement('canvas');
+            backupCanvas.width = canvas.width;
+            backupCanvas.height = canvas.height;
+            const backupCtx = backupCanvas.getContext('2d');
+            backupCtx.drawImage(rawImage, 0, 0, canvas.width, canvas.height);
+
+            tempCtx.drawImage(backupCanvas, x1, y1, cropW, cropH, 0, 0, cropW, cropH);
+
+            const croppedDataUrl = tempCanvas.toDataURL();
+            rawImage = new Image();
+            rawImage.onload = function() {
+                // Reset bounds for subsequent crops
+                cropLeft = 0;
+                cropRight = 0;
+                cropTop = 0;
+                cropBottom = 0;
+                cropLeftSlider.value = 0;
+                cropRightSlider.value = 0;
+                cropTopSlider.value = 0;
+                cropBottomSlider.value = 0;
+                document.getElementById('crop-left-val').textContent = '0%';
+                document.getElementById('crop-right-val').textContent = '0%';
+                document.getElementById('crop-top-val').textContent = '0%';
+                document.getElementById('crop-bottom-val').textContent = '0%';
+                
+                isCroppingActive = false;
+                btnToggleCrop.textContent = 'Enable Crop Box';
+                btnToggleCrop.className = 'btn btn-sm btn-outline-info';
+                cropSlidersSection.style.display = 'none';
+
+                processUploadedImage();
+            };
+            rawImage.src = croppedDataUrl;
+        });
+
+        btnResetCrop.addEventListener('click', () => {
+            if (!fullOriginalImage) return;
+            rawImage = fullOriginalImage;
+            
+            cropLeft = 0;
+            cropRight = 0;
+            cropTop = 0;
+            cropBottom = 0;
+            cropLeftSlider.value = 0;
+            cropRightSlider.value = 0;
+            cropTopSlider.value = 0;
+            cropBottomSlider.value = 0;
+            document.getElementById('crop-left-val').textContent = '0%';
+            document.getElementById('crop-right-val').textContent = '0%';
+            document.getElementById('crop-top-val').textContent = '0%';
+            document.getElementById('crop-bottom-val').textContent = '0%';
+            
+            isCroppingActive = false;
+            btnToggleCrop.textContent = 'Enable Crop Box';
+            btnToggleCrop.className = 'btn btn-sm btn-outline-info';
+            cropSlidersSection.style.display = 'none';
+
+            processUploadedImage();
         });
     </script>
 </body>
