@@ -219,6 +219,60 @@
                     </div>
                 </div>
 
+                <!-- Backdrop & Light Intensities Card -->
+                <div class="card card-custom p-4 mb-4">
+                    <h3 class="mb-4 text-warning">🎚️ Intensities & Backdrop Quality</h3>
+                    
+                    <!-- Green Screen Smoothness Slider -->
+                    <div class="mb-3">
+                        <label for="gs-material" class="form-label d-flex justify-content-between">
+                            <span>🟢 Backdrop Quality (Smoothness):</span>
+                            <span class="fw-bold text-success" id="gs-material-val">90%</span>
+                        </label>
+                        <input type="range" class="form-range" id="gs-material" min="10" max="100" step="5" value="90">
+                        <div class="d-flex justify-content-between text-muted small" style="font-size: 10px;">
+                            <span>10% (Wrinkles/Folds)</span>
+                            <span>100% (Perfect Studio Paint)</span>
+                        </div>
+                    </div>
+
+                    <!-- Key Light Intensity -->
+                    <div class="mb-3">
+                        <label for="key-intensity" class="form-label d-flex justify-content-between">
+                            <span>🔑 Key Light Intensity:</span>
+                            <span class="fw-bold text-warning" id="key-intensity-val">80%</span>
+                        </label>
+                        <input type="range" class="form-range" id="key-intensity" min="0" max="100" step="5" value="80">
+                    </div>
+
+                    <!-- Fill Light Intensity -->
+                    <div class="mb-3">
+                        <label for="fill-intensity" class="form-label d-flex justify-content-between">
+                            <span>🌊 Fill Light Intensity:</span>
+                            <span class="fw-bold text-info" id="fill-intensity-val">50%</span>
+                        </label>
+                        <input type="range" class="form-range" id="fill-intensity" min="0" max="100" step="5" value="50">
+                    </div>
+
+                    <!-- Rim Light Intensity -->
+                    <div class="mb-3">
+                        <label for="rim-intensity" class="form-label d-flex justify-content-between">
+                            <span>☀️ Rim Light Intensity:</span>
+                            <span class="fw-bold text-purple" id="rim-intensity-val">70%</span>
+                        </label>
+                        <input type="range" class="form-range" id="rim-intensity" min="0" max="100" step="5" value="70">
+                    </div>
+
+                    <!-- Green Screen Light Intensity -->
+                    <div class="mb-0">
+                        <label for="gs-intensity" class="form-label d-flex justify-content-between">
+                            <span>🔦 GS Wash Light Intensity:</span>
+                            <span class="fw-bold text-success" id="gs-intensity-val">70%</span>
+                        </label>
+                        <input type="range" class="form-range" id="gs-intensity" min="0" max="100" step="5" value="70">
+                    </div>
+                </div>
+
                 <!-- Interactive Keying Preview -->
                 <div class="card card-custom p-4">
                     <h3 class="mb-3 text-info">🎬 Live Keying Preview</h3>
@@ -250,6 +304,18 @@
                         <div class="position-absolute bottom-2 start-2 bg-dark bg-opacity-75 px-2 py-1 rounded small border border-secondary z-3" style="font-size: 11px;">
                             Status: <span id="preview-status" class="text-success fw-bold">Perfect Setup</span>
                         </div>
+                    </div>
+                    
+                    <!-- Quality Estimator Indicator -->
+                    <div class="p-3 rounded bg-dark border border-secondary">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small fw-semibold text-secondary">Estimated Green Key Quality:</span>
+                            <span class="badge bg-success" id="quality-badge">90%</span>
+                        </div>
+                        <div class="progress mb-2" style="height: 10px; background-color: #1e293b;">
+                            <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" id="quality-progress" style="width: 90%;" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <p class="mb-0 text-secondary" style="font-size: 11px; line-height: 1.3;" id="quality-verdict">Estimating keying parameters...</p>
                     </div>
                 </div>
 
@@ -548,7 +614,12 @@
             keyOn: true,
             fillOn: true,
             rimOn: true,
-            gsLightOn: false
+            gsLightOn: false,
+            gsMaterialQuality: 90,
+            keyIntensity: 80,
+            fillIntensity: 50,
+            rimIntensity: 70,
+            gsIntensity: 70
         };
 
         // DOM elements
@@ -563,6 +634,23 @@
         const toggleRim = document.getElementById('toggle-rim');
         const toggleGsLight = document.getElementById('toggle-gs-light');
         const badgeGsLight = document.getElementById('badge-gs-light');
+
+        // Intensity Sliders
+        const gsMaterialSlider = document.getElementById('gs-material');
+        const gsMaterialVal = document.getElementById('gs-material-val');
+        const keyIntensitySlider = document.getElementById('key-intensity');
+        const keyIntensityVal = document.getElementById('key-intensity-val');
+        const fillIntensitySlider = document.getElementById('fill-intensity');
+        const fillIntensityVal = document.getElementById('fill-intensity-val');
+        const rimIntensitySlider = document.getElementById('rim-intensity');
+        const rimIntensityVal = document.getElementById('rim-intensity-val');
+        const gsIntensitySlider = document.getElementById('gs-intensity');
+        const gsIntensityVal = document.getElementById('gs-intensity-val');
+
+        // Quality Gauge Elements
+        const qualityBadge = document.getElementById('quality-badge');
+        const qualityProgress = document.getElementById('quality-progress');
+        const qualityVerdict = document.getElementById('quality-verdict');
 
         // Visual elements (SVG & HTML preview)
         const keyBeamCone = document.getElementById('key-beam-cone');
@@ -610,6 +698,13 @@
             if (coordSubjY) coordSubjY.textContent = metricSubjY.toFixed(1) + 'm';
             if (coordCamY) coordCamY.textContent = metricCamY.toFixed(1) + 'm';
 
+            // Update slider text displays
+            gsMaterialVal.textContent = state.gsMaterialQuality + '%';
+            keyIntensityVal.textContent = state.keyIntensity + '%';
+            fillIntensityVal.textContent = state.fillIntensity + '%';
+            rimIntensityVal.textContent = state.rimIntensity + '%';
+            gsIntensityVal.textContent = state.gsIntensity + '%';
+
             // Calculate SVG coordinates
             const subjY = yOffset + ((4.0 - state.subjDist) * scale);
             const camY = yOffset + ((4.0 - state.camDist) * scale);
@@ -618,13 +713,14 @@
             subjectNode.setAttribute('transform', `translate(${xCenter}, ${subjY})`);
             cameraNode.setAttribute('transform', `translate(${xCenter}, ${camY})`);
 
-            // Handle Light beam cones matching subject position
+            // Handle Light beam cones matching subject position and intensities
             // Key Light beam pointing from (105, 238) to subject
-            if (state.keyOn) {
-                keyBeamCone.style.opacity = '1';
+            if (state.keyOn && state.keyIntensity > 0) {
+                keyBeamCone.style.opacity = (state.keyIntensity / 100) * 0.7;
                 keyBeamCone.setAttribute('d', `M 105 238 L ${xCenter - 25} ${subjY} L ${xCenter + 20} ${subjY} Z`);
                 svgKeyCircle.setAttribute('fill', '#fef08a');
                 keyHighlight.style.display = 'block';
+                keyHighlight.setAttribute('opacity', (state.keyIntensity / 100) * 0.4);
             } else {
                 keyBeamCone.style.opacity = '0';
                 svgKeyCircle.setAttribute('fill', '#0f172a');
@@ -632,11 +728,12 @@
             }
 
             // Fill Light beam pointing from (235, 238) to subject
-            if (state.fillOn) {
-                fillBeamCone.style.opacity = '1';
+            if (state.fillOn && state.fillIntensity > 0) {
+                fillBeamCone.style.opacity = (state.fillIntensity / 100) * 0.6;
                 fillBeamCone.setAttribute('d', `M 235 238 L ${xCenter - 20} ${subjY} L ${xCenter + 25} ${subjY} Z`);
                 svgFillCircle.setAttribute('fill', '#bae6fd');
                 fillHighlight.style.display = 'block';
+                fillHighlight.setAttribute('opacity', (state.fillIntensity / 100) * 0.3);
             } else {
                 fillBeamCone.style.opacity = '0';
                 svgFillCircle.setAttribute('fill', '#0f172a');
@@ -644,11 +741,11 @@
             }
 
             // Rim Light beam pointing from (118, 446) to back of subject (facing UP, back is Y + 10)
-            if (state.rimOn) {
-                rimBeamCone.style.opacity = '1';
+            if (state.rimOn && state.rimIntensity > 0) {
+                rimBeamCone.style.opacity = (state.rimIntensity / 100) * 0.55;
                 rimBeamCone.setAttribute('d', `M 118 446 L ${xCenter - 20} ${subjY + 10} L ${xCenter + 20} ${subjY + 10} Z`);
                 svgRimCircle.setAttribute('fill', '#e9d5ff');
-                rimHighlight.setAttribute('opacity', '0.85');
+                rimHighlight.setAttribute('opacity', (state.rimIntensity / 100) * 0.85);
             } else {
                 rimBeamCone.style.opacity = '0';
                 svgRimCircle.setAttribute('fill', '#0f172a');
@@ -656,8 +753,8 @@
             }
 
             // Green Screen Light beam pointing from (170, 446) down at green screen (550px)
-            if (state.gsLightOn) {
-                gsBeamCone.style.opacity = '1';
+            if (state.gsLightOn && state.gsIntensity > 0) {
+                gsBeamCone.style.opacity = (state.gsIntensity / 100) * 0.65;
                 svgGsCircle.setAttribute('fill', '#22c55e');
                 svgGsLightGroup.style.opacity = '1';
             } else {
@@ -666,18 +763,19 @@
                 svgGsLightGroup.style.opacity = '0.3';
             }
 
-            // Calculate Spill and Shadows based on Distance
+            // Calculate Spill and Shadows based on Distance and Intensities
             // If subject is close to the screen, cast shadow on the screen
             if (state.subjDist < 1.2 && (state.keyOn || state.fillOn)) {
-                // Shadow opacity is stronger the closer you get
-                const shadowStrength = (1.2 - state.subjDist) / 0.7;
+                // Shadow opacity is stronger the closer you get and the brighter the lights are
+                const activeIntensity = Math.max(state.keyOn ? state.keyIntensity : 0, state.fillOn ? state.fillIntensity : 0);
+                const shadowStrength = ((1.2 - state.subjDist) / 0.7) * (activeIntensity / 100);
                 wallShadow.setAttribute('opacity', Math.min(shadowStrength, 0.75));
                 subjShadow.setAttribute('opacity', Math.min(shadowStrength, 0.6));
                 
                 // Spill overlay simulation
                 spillOverlay.style.opacity = Math.min((1.2 - state.subjDist) * 0.8, 0.8);
                 
-                if (state.rimOn) {
+                if (state.rimOn && state.rimIntensity > 50) {
                     previewStatus.textContent = "Shadow on Green Screen!";
                     previewStatus.className = "text-warning fw-bold";
                 } else {
@@ -692,7 +790,7 @@
                 if (!state.keyOn && !state.fillOn) {
                     previewStatus.textContent = "Subject Underexposed";
                     previewStatus.className = "text-danger fw-bold";
-                } else if (!state.rimOn) {
+                } else if (!state.rimOn || state.rimIntensity < 30) {
                     previewStatus.textContent = "Green Spill Hazard";
                     previewStatus.className = "text-warning fw-bold";
                 } else if (!state.gsLightOn) {
@@ -704,12 +802,88 @@
                 }
             }
 
-            // Adjust preview background color based on screen wash light state (make it uniform neon if gsLight is on)
-            if (state.gsLightOn) {
-                previewBg.style.backgroundColor = '#10b981'; // Pure green screen glow
-                previewBg.style.boxShadow = 'inset 0 0 20px rgba(16, 185, 129, 0.5)';
+            // Estimate Green Key Quality Index (Mathematical Formula)
+            let quality = state.gsMaterialQuality; // Base quality is the fabric material quality
+            let reasons = [];
+
+            // Penalty 1: Subject shadows on wall
+            if (state.subjDist < 1.2 && (state.keyOn || state.fillOn)) {
+                const activeIntensity = Math.max(state.keyOn ? state.keyIntensity : 0, state.fillOn ? state.fillIntensity : 0);
+                const shadowPenalty = Math.round((1.2 - state.subjDist) * (activeIntensity / 100) * 45);
+                quality -= shadowPenalty;
+                if (shadowPenalty > 5) reasons.push("subject shadow on screen");
+            }
+
+            // Penalty 2: Missing or uneven backdrop lights
+            if (!state.gsLightOn || state.gsIntensity === 0) {
+                quality -= 25;
+                reasons.push("uneven background light (missing wash)");
             } else {
-                previewBg.style.backgroundColor = '#22c55e'; // Normal green
+                // Background Light intensity checks
+                if (state.gsIntensity < 50) {
+                    const dimPenalty = Math.round((50 - state.gsIntensity) * 0.7);
+                    quality -= dimPenalty;
+                    if (dimPenalty > 5) reasons.push("background light too dim (noise)");
+                } else if (state.gsIntensity > 80) {
+                    const brightPenalty = Math.round((state.gsIntensity - 80) * 0.8);
+                    quality -= brightPenalty;
+                    if (brightPenalty > 5) reasons.push("background light too bright (heavy spill)");
+                }
+            }
+
+            // Penalty 3: Low separation or no rim light
+            if (!state.rimOn || state.rimIntensity === 0) {
+                quality -= 15;
+                reasons.push("no subject-background separation (rim off)");
+            } else if (state.rimIntensity < 40) {
+                quality -= 8;
+                reasons.push("weak rim light");
+            } else if (state.rimIntensity > 60) {
+                // strong rim light helps isolate subject outline
+                quality = Math.min(100, quality + 5);
+            }
+
+            // Penalty 4: Subject underexposed
+            if ((!state.keyOn || state.keyIntensity < 30) && (!state.fillOn || state.fillIntensity < 30)) {
+                quality -= 20;
+                reasons.push("subject underexposed (raise key/fill)");
+            }
+
+            // Cap quality metric
+            quality = Math.max(0, Math.min(100, quality));
+
+            // Update UI elements
+            qualityBadge.textContent = quality + '%';
+            qualityProgress.style.width = quality + '%';
+            qualityProgress.setAttribute('aria-valuenow', quality);
+
+            if (quality >= 80) {
+                qualityBadge.className = "badge bg-success";
+                qualityProgress.className = "progress-bar bg-success progress-bar-striped progress-bar-animated";
+            } else if (quality >= 50) {
+                qualityBadge.className = "badge bg-warning text-dark";
+                qualityProgress.className = "progress-bar bg-warning progress-bar-striped progress-bar-animated";
+            } else {
+                qualityBadge.className = "badge bg-danger";
+                qualityProgress.className = "progress-bar bg-danger progress-bar-striped progress-bar-animated";
+            }
+
+            if (reasons.length === 0) {
+                qualityVerdict.textContent = "Perfect lighting balance! Uniform chroma backdrop with zero spill.";
+                qualityVerdict.className = "mb-0 text-success small";
+            } else {
+                qualityVerdict.textContent = "Improvements needed: " + reasons.join(", ") + ".";
+                qualityVerdict.className = "mb-0 text-warning small";
+            }
+
+            // Adjust preview background color based on screen wash light state & quality
+            if (state.gsLightOn && state.gsIntensity > 0) {
+                // Clean green shade depends on the calculated keying quality
+                const opacity = 0.4 + (quality / 100) * 0.6;
+                previewBg.style.backgroundColor = `rgba(16, 185, 129, ${opacity})`;
+                previewBg.style.boxShadow = `inset 0 0 30px rgba(16, 185, 129, ${0.2 + (quality/100)*0.5})`;
+            } else {
+                previewBg.style.backgroundColor = '#1c3427'; // Dark, noisy green
                 previewBg.style.boxShadow = 'none';
             }
 
@@ -768,6 +942,32 @@
             } else {
                 badgeGsLight.className = "light-badge bg-secondary text-white";
             }
+            updateSimulation();
+        });
+
+        // Add range listeners for new sliders
+        gsMaterialSlider.addEventListener('input', (e) => {
+            state.gsMaterialQuality = parseInt(e.target.value);
+            updateSimulation();
+        });
+
+        keyIntensitySlider.addEventListener('input', (e) => {
+            state.keyIntensity = parseInt(e.target.value);
+            updateSimulation();
+        });
+
+        fillIntensitySlider.addEventListener('input', (e) => {
+            state.fillIntensity = parseInt(e.target.value);
+            updateSimulation();
+        });
+
+        rimIntensitySlider.addEventListener('input', (e) => {
+            state.rimIntensity = parseInt(e.target.value);
+            updateSimulation();
+        });
+
+        gsIntensitySlider.addEventListener('input', (e) => {
+            state.gsIntensity = parseInt(e.target.value);
             updateSimulation();
         });
 
