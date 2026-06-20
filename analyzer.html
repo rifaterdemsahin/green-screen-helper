@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client-Side Green Screen Photo Analyzer | Green Screen Helper</title>
+    <meta name="description" content="Upload a photo of your green screen setup. Run a client-side scan to detect wrinkles, shadows, hotspots, and framing edge obstructions with instant visual feedback and step-by-step tips.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .analyzer-preview-box {
+            background: #0d131f;
+            border: 2px dashed var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .analyzer-preview-box.dragover {
+            border-color: var(--primary-neon);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        #analysis-canvas {
+            max-width: 100%;
+            max-height: 480px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            display: none;
+        }
+
+        .stat-card {
+            background: rgba(21, 28, 44, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .diagnostic-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .issue-card {
+            background: rgba(244, 63, 94, 0.04);
+            border-left: 4px solid var(--red-neon);
+            border-radius: 0 12px 12px 0;
+            padding: 18px;
+            margin-bottom: 24px;
+            border-top: 1px solid rgba(244, 63, 94, 0.1);
+            border-right: 1px solid rgba(244, 63, 94, 0.1);
+            border-bottom: 1px solid rgba(244, 63, 94, 0.1);
+        }
+
+        .issue-title {
+            color: #fca5a5;
+            font-weight: 700;
+            font-size: 1.15rem;
+            margin-bottom: 10px;
+        }
+
+        .tip-card {
+            background: rgba(16, 185, 129, 0.04);
+            border-left: 4px solid var(--primary-neon);
+            border-radius: 0 12px 12px 0;
+            padding: 18px;
+            margin-bottom: 15px;
+            border-top: 1px solid rgba(16, 185, 129, 0.1);
+            border-right: 1px solid rgba(16, 185, 129, 0.1);
+            border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+        }
+
+        .tip-title {
+            color: #a7f3d0;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .btn-toggle-view {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+    </style>
+</head>
+<body class="bg-dark text-white">
+    <!-- Navigation Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                🟢 Green Screen Helper
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">🏠 Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="lighting.html">💡 Lighting Setup</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="calculator.html">🧮 Room Calculator</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="camera-focus-guide.html">🎯 Focus Guide</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="camera-guide.html">📷 Camera Guide</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="shooting-guide.html">🎬 Shooting Guide</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="analyzer.html">🔍 Photo Analyzer</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="text-center mb-5">
+            <h1 class="display-5 text-success-custom fw-bold mb-2">📷 Green Screen Photo Analyzer</h1>
+            <p class="lead text-secondary">Verify background lighting uniformity, shadows, and framing bounds instantly</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left Side: Interactive Upload & Canvas Viewer -->
+            <div class="col-lg-6">
+                <div class="card card-custom p-4 h-100">
+                    <h3 class="mb-3 text-success">📁 Setup Image Diagnostic</h3>
+                    <p class="text-secondary small mb-4">Upload a snapshot of your studio setup. We run client-side HSL color parsing to check screen quality.</p>
+                    
+                    <!-- File Drag Area -->
+                    <div class="analyzer-preview-box mb-3" id="drop-zone">
+                        <div id="upload-placeholder" class="text-center p-4">
+                            <span class="fs-1 d-block mb-2">📸</span>
+                            <span class="d-block fw-semibold mb-1">Drag & drop your photo here</span>
+                            <span class="text-secondary small d-block mb-3">Or click below to browse files</span>
+                            <input class="form-control bg-dark text-white border-secondary" type="file" id="image-upload" accept="image/*" style="max-width: 250px; margin: 0 auto;">
+                        </div>
+                        <canvas id="analysis-canvas"></canvas>
+                    </div>
+
+                    <!-- Canvas Toggle controls -->
+                    <div id="view-controls" class="d-flex justify-content-between align-items-center mb-4 p-2 bg-dark rounded border border-secondary" style="display: none !important;">
+                        <span class="small text-secondary fw-semibold ps-2">Visualizer View Mode:</span>
+                        <div>
+                            <button class="btn btn-outline-success btn-toggle-view me-2 active" id="btn-show-overlay">🟢 Diagnostic Heatmap</button>
+                            <button class="btn btn-outline-secondary btn-toggle-view" id="btn-show-original">🖼️ Raw Photo</button>
+                        </div>
+                    </div>
+
+                    <!-- Map Overlay Legend -->
+                    <div id="analysis-legend" class="p-3 mb-4 bg-dark rounded border border-secondary" style="display: none;">
+                        <h6 class="small fw-bold text-secondary mb-2">Heatmap Overlay Legend:</h6>
+                        <div class="row g-2 text-start small">
+                            <div class="col-6">
+                                <span class="legend-dot" style="background-color: rgba(16, 185, 129, 0.85);"></span>
+                                <span>Ideal Green Screen Zone</span>
+                            </div>
+                            <div class="col-6">
+                                <span class="legend-dot" style="background-color: #f43f5e;"></span>
+                                <span>Hotspot (Overexposure)</span>
+                            </div>
+                            <div class="col-12">
+                                <span class="legend-dot" style="background-color: #0ea5e9;"></span>
+                                <span>Shadow / Wrinkle / Folds</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Diagnostic Numeric Cards -->
+                    <div id="analysis-stats" class="row g-3" style="display: none;">
+                        <div class="col-6 col-md-3">
+                            <div class="stat-card">
+                                <span class="d-block text-secondary small mb-1">Uniformity</span>
+                                <span class="stat-value text-success" id="stat-uniformity">-%</span>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-card">
+                                <span class="d-block text-secondary small mb-1">Hotspots</span>
+                                <span class="stat-value text-warning" id="stat-hotspots">-%</span>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-card">
+                                <span class="d-block text-secondary small mb-1">Shadows</span>
+                                <span class="stat-value text-danger" id="stat-shadows">-%</span>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-card">
+                                <span class="d-block text-secondary small mb-1">Obstructions</span>
+                                <span class="stat-value text-info" id="stat-edges">No</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Detailed Diagnostic Panel -->
+            <div class="col-lg-6">
+                <div class="diagnostic-card h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="mb-0 text-warning">📊 Diagnostic Scan Report</h3>
+                        <span class="badge bg-secondary px-3 py-2 fw-semibold" id="report-type-badge">Showing Example Setup Report</span>
+                    </div>
+                    
+                    <p class="text-secondary small mb-4" id="report-status-desc">
+                        To test your own environment, upload a setup picture on the left. The report below illustrates common issues diagnosed from a sample setup with uneven lighting and framing errors.
+                    </p>
+
+                    <!-- Analysis Output Container -->
+                    <div id="report-output">
+                        <!-- 1. Lighting Issues Section -->
+                        <div class="issue-card" id="issue-lighting-container">
+                            <h4 class="issue-title">1. Harsh, Uneven Lighting & Shadows</h4>
+                            <p class="mb-2"><strong>The Problem:</strong> <span id="issue-lighting-desc">The most significant issue is the prominent, angular shadow/color shift cutting right through the middle of the screen.</span></p>
+                            <p class="mb-0 text-secondary small">
+                                <strong>Why it matters:</strong> For a green screen to work perfectly, the green needs to be a completely uniform, flat color. The sharp contrast between the bright green on the left/top and the darker, shadowed green in the center means your editing software will struggle. If you key out the bright green, the dark green shadow might remain, or vice versa, leading to a "fuzzy" or artifact-heavy edge around your subject.
+                            </p>
+                        </div>
+
+                        <!-- 2. Framing & Edge Issues Section -->
+                        <div class="issue-card" id="issue-framing-container">
+                            <h4 class="issue-title">2. Framing and Edge Obstructions</h4>
+                            <ul class="mb-3 small text-white-50" style="padding-left: 1.25rem;" id="issue-framing-list">
+                                <li class="mb-2"><strong class="text-white">Top-Right Corner:</strong> There is a piece of black material (likely a clamp, part of the frame, or a softbox) encroaching onto the green area.</li>
+                                <li><strong class="text-white">Right Edge:</strong> A strip of the background wall or stand is visible.</li>
+                            </ul>
+                            <p class="mb-0 text-secondary small">
+                                <strong>Why it matters:</strong> While you can fix some of this with a "garbage matte" (cropping out the edges in editing), it severely limits your subject's movement and forces you to do extra manual work in post.
+                            </p>
+                        </div>
+
+                        <!-- 3. Corrective Tips Section -->
+                        <div class="card card-custom p-4 bg-dark border-secondary">
+                            <h4 class="text-success mb-3">💡 Quick Tips to Fix This:</h4>
+                            
+                            <div class="tip-card">
+                                <h5 class="tip-title">⚡ Light the Screen Separately</h5>
+                                <p class="mb-0 text-secondary small">
+                                    Try using two dedicated lights placed on either side of the green screen at 45-degree angles to wash it evenly with light, completely erasing that central shadow.
+                                </p>
+                            </div>
+
+                            <div class="tip-card">
+                                <h5 class="tip-title">🚶 Step Away from the Screen</h5>
+                                <p class="mb-0 text-secondary small">
+                                    Make sure your subject stands at least 4–6 feet in front of the screen. This prevents their body from casting new shadows onto the backdrop.
+                                </p>
+                            </div>
+
+                            <div class="tip-card">
+                                <h5 class="tip-title">⚙️ Adjust Your Camera Angle</h5>
+                                <p class="mb-0 text-secondary small">
+                                    Zoom in slightly or adjust the camera position to fill the frame entirely with green, eliminating the black artifact in the top right and the white gap on the side.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-custom mt-5">
+        <div class="container text-center">
+            <div class="support-buttons my-3">
+                <a href="https://www.linkedin.com/in/rifaterdemsahin/" target="_blank" class="btn btn-primary">🤝 Let's Connect</a>
+                <a href="https://buymeacoffee.com/rifaterdemsahin" target="_blank" class="btn btn-warning">☕ Buy Me a Coffee</a>
+            </div>
+            <div class="social-links my-3">
+                <a href="https://www.youtube.com/@RifatErdemSahin" target="_blank" class="social-link text-white mx-2">📺 YouTube</a>
+                <a href="https://www.linkedin.com/in/rifaterdemsahin/" target="_blank" class="social-link text-white mx-2">💼 LinkedIn</a>
+                <a href="https://github.com/rifaterdemsahin/" target="_blank" class="social-link text-white mx-2">💻 GitHub</a>
+                <a href="https://hello.rifaterdemsahin.com" target="_blank" class="social-link text-white mx-2">🌐 Website</a>
+            </div>
+            <p class="text-muted">Built with ❤️ by Rifat Erdem Sahin | 🤖 AI-powered green screen assistance | <a href="licenses.html" class="text-white">📜 Licenses</a></p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const imageUpload = document.getElementById('image-upload');
+        const canvas = document.getElementById('analysis-canvas');
+        const placeholder = document.getElementById('upload-placeholder');
+        
+        const viewControls = document.getElementById('view-controls');
+        const btnShowOverlay = document.getElementById('btn-show-overlay');
+        const btnShowOriginal = document.getElementById('btn-show-original');
+        const legendContainer = document.getElementById('analysis-legend');
+        const statsContainer = document.getElementById('analysis-stats');
+
+        const statUniformity = document.getElementById('stat-uniformity');
+        const statHotspots = document.getElementById('stat-hotspots');
+        const statShadows = document.getElementById('stat-shadows');
+        const statEdges = document.getElementById('stat-edges');
+
+        const reportTypeBadge = document.getElementById('report-type-badge');
+        const reportStatusDesc = document.getElementById('report-status-desc');
+        const issueLightingContainer = document.getElementById('issue-lighting-container');
+        const issueLightingDesc = document.getElementById('issue-lighting-desc');
+        const issueFramingContainer = document.getElementById('issue-framing-container');
+        const issueFramingList = document.getElementById('issue-framing-list');
+
+        let rawImage = null; // Store original uploaded Image object
+        let heatmapImageData = null; // Store computed heatmap pixels
+        let originalImageData = null; // Store computed original pixels
+        let activeViewMode = 'overlay'; // 'overlay' or 'original'
+
+        // Drag & Drop event bindings
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+            }, false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                imageUpload.files = files;
+                handleImageFile(files[0]);
+            }
+        });
+
+        imageUpload.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleImageFile(e.target.files[0]);
+            }
+        });
+
+        function handleImageFile(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                rawImage = new Image();
+                rawImage.onload = function() {
+                    processUploadedImage();
+                };
+                rawImage.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function processUploadedImage() {
+            // Setup canvas size, downscale if too large
+            const maxDimension = 650;
+            let width = rawImage.width;
+            let height = rawImage.height;
+            
+            if (width > maxDimension || height > maxDimension) {
+                if (width > height) {
+                    height = Math.round((height * maxDimension) / width);
+                    width = maxDimension;
+                } else {
+                    width = Math.round((width * maxDimension) / height);
+                    height = maxDimension;
+                }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(rawImage, 0, 0, width, height);
+
+            // Fetch and clone image pixels
+            const imgDataOrig = ctx.getImageData(0, 0, width, height);
+            originalImageData = imgDataOrig;
+            
+            const imgDataOverlay = ctx.getImageData(0, 0, width, height);
+            const data = imgDataOverlay.data;
+
+            let totalGreenPixels = 0;
+            let shadowsCount = 0;
+            let hotspotsCount = 0;
+            let goodGreenCount = 0;
+            let greenBrightnesses = [];
+
+            // Border analysis pixel grids
+            let topRightObstruction = 0;
+            let rightEdgeObstruction = 0;
+            let leftEdgeObstruction = 0;
+            let topEdgeObstruction = 0;
+
+            let trTotal = 0, rTotal = 0, lTotal = 0, tTotal = 0;
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = (y * width + x) * 4;
+                    const r = data[idx];
+                    const g = data[idx+1];
+                    const b = data[idx+2];
+
+                    const rNorm = r / 255;
+                    const gNorm = g / 255;
+                    const bNorm = b / 255;
+
+                    const max = Math.max(rNorm, gNorm, bNorm);
+                    const min = Math.min(rNorm, gNorm, bNorm);
+                    let h, s, l = (max + min) / 2;
+
+                    if (max === min) {
+                        h = s = 0;
+                    } else {
+                        const d = max - min;
+                        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                        switch (max) {
+                            case rNorm: h = (gNorm - bNorm) / d + (gNorm < bNorm ? 6 : 0); break;
+                            case gNorm: h = (bNorm - rNorm) / d + 2; break;
+                            case bNorm: h = (rNorm - gNorm) / d + 4; break;
+                        }
+                        h /= 6;
+                    }
+
+                    const hueDegrees = h * 360;
+                    const isGreen = hueDegrees >= 80 && hueDegrees <= 165 && s > 0.15;
+
+                    // Grid border checks for edge obstructions
+                    // 1. Top-Right Corner (X > 80%, Y < 20%)
+                    if (x > width * 0.8 && y < height * 0.20) {
+                        trTotal++;
+                        if (!isGreen || l < 0.22 || l > 0.85) topRightObstruction++;
+                    }
+                    // 2. Right Edge (X > 94%, Y between 10% and 90%)
+                    if (x > width * 0.94 && y >= height * 0.1 && y <= height * 0.9) {
+                        rTotal++;
+                        if (!isGreen) rightEdgeObstruction++;
+                    }
+                    // 3. Left Edge (X < 6%, Y between 10% and 90%)
+                    if (x < width * 0.06 && y >= height * 0.1 && y <= height * 0.9) {
+                        lTotal++;
+                        if (!isGreen) leftEdgeObstruction++;
+                    }
+                    // 4. Top Edge (Y < 6%, X between 10% and 90%)
+                    if (y < height * 0.06 && x >= width * 0.1 && x <= width * 0.9) {
+                        tTotal++;
+                        if (!isGreen) topEdgeObstruction++;
+                    }
+
+                    if (isGreen) {
+                        totalGreenPixels++;
+                        greenBrightnesses.push(l * 100);
+
+                        if (l < 0.28) {
+                            shadowsCount++;
+                            // Blue overlay highlight
+                            data[idx] = 14;
+                            data[idx+1] = 165;
+                            data[idx+2] = 233;
+                        } else if (l > 0.82 || s < 0.25) {
+                            hotspotsCount++;
+                            // Red overlay highlight
+                            data[idx] = 244;
+                            data[idx+1] = 63;
+                            data[idx+2] = 94;
+                        } else {
+                            goodGreenCount++;
+                            // Green wash overlay
+                            data[idx] = Math.round(r * 0.4);
+                            data[idx+1] = Math.round(g * 1.3);
+                            data[idx+2] = Math.round(b * 0.4);
+                        }
+                    }
+                }
+            }
+
+            heatmapImageData = imgDataOverlay;
+            renderCanvasView();
+
+            // Reveal analysis interface cards
+            placeholder.style.display = 'none';
+            canvas.style.display = 'block';
+            viewControls.style.setAttribute('style', 'display: flex !important;');
+            legendContainer.style.display = 'block';
+            statsContainer.style.display = 'flex';
+
+            // Generate diagnostic output scores
+            if (totalGreenPixels > 0) {
+                const shadowPct = Math.round((shadowsCount / totalGreenPixels) * 100);
+                const hotspotPct = Math.round((hotspotsCount / totalGreenPixels) * 100);
+
+                const meanBrightness = greenBrightnesses.reduce((a,b)=>a+b, 0) / greenBrightnesses.length;
+                const variance = greenBrightnesses.reduce((a,b)=>a + Math.pow(b - meanBrightness, 2), 0) / greenBrightnesses.length;
+                const stdDev = Math.sqrt(variance);
+
+                let uniformityScore = Math.round(100 - (stdDev * 3));
+                uniformityScore = Math.max(10, Math.min(100, uniformityScore));
+
+                statUniformity.textContent = uniformityScore + '%';
+                statHotspots.textContent = hotspotPct + '%';
+                statShadows.textContent = shadowPct + '%';
+
+                // Check edge ratios
+                const isTrBlocked = trTotal > 0 && (topRightObstruction / trTotal) > 0.25;
+                const isRBlocked = rTotal > 0 && (rightEdgeObstruction / rTotal) > 0.25;
+                const isLBlocked = lTotal > 0 && (leftEdgeObstruction / lTotal) > 0.25;
+                const isTBlocked = tTotal > 0 && (topEdgeObstruction / tTotal) > 0.25;
+
+                const hasObstruction = isTrBlocked || isRBlocked || isLBlocked || isTBlocked;
+                statEdges.textContent = hasObstruction ? "Yes" : "No";
+                statEdges.className = hasObstruction ? "stat-value text-danger" : "stat-value text-success";
+
+                // Generate real-time reports matching the user specifications
+                reportTypeBadge.textContent = "Live Image Scan Complete";
+                reportTypeBadge.className = "badge bg-success px-3 py-2 fw-semibold";
+                reportStatusDesc.textContent = "Diagnostic results computed successfully. Below are the key issues identified in your green screen setup photo.";
+
+                // 1. Lighting diagnostic text injection
+                if (uniformityScore < 85 || shadowPct > 10 || hotspotPct > 5) {
+                    issueLightingContainer.style.display = 'block';
+                    let lightingProblem = "";
+                    if (shadowPct > 15 && uniformityScore < 75) {
+                        lightingProblem = "The scan detected strong shadows and folds (marked in Blue) causing uneven luminance across the backdrop.";
+                    } else if (hotspotPct > 8) {
+                        lightingProblem = "There are significant bright hotspots (marked in Red) where light is concentrated too intensely, washing out the chroma saturation.";
+                    } else {
+                        lightingProblem = "The screen is lit unevenly, creating a noticeable gradient from bright regions to dark shadows.";
+                    }
+                    issueLightingDesc.textContent = lightingProblem;
+                } else {
+                    issueLightingContainer.style.display = 'none';
+                }
+
+                // 2. Framing edge diagnostic list injection
+                if (hasObstruction) {
+                    issueFramingContainer.style.display = 'block';
+                    let listHtml = "";
+                    if (isTrBlocked) {
+                        listHtml += `<li class="mb-2"><strong class="text-white">Top-Right Corner:</strong> There is a piece of dark material (likely a clamp, part of the frame, or a softbox) encroaching onto the green area.</li>`;
+                    }
+                    if (isRBlocked) {
+                        listHtml += `<li class="mb-2"><strong class="text-white">Right Edge:</strong> A strip of the background wall, door, or stand is visible.</li>`;
+                    }
+                    if (isLBlocked) {
+                        listHtml += `<li class="mb-2"><strong class="text-white">Left Edge:</strong> The side wall or support pillar is visible inside the camera bounds.</li>`;
+                    }
+                    if (isTBlocked) {
+                        listHtml += `<li><strong class="text-white">Top Edge:</strong> The backdrop crossbar or support rack is encroaching into the frame.</li>`;
+                    }
+                    issueFramingList.innerHTML = listHtml;
+                } else {
+                    issueFramingContainer.style.display = 'none';
+                }
+
+                // Fallback for a perfect image
+                if (uniformityScore >= 85 && shadowPct <= 10 && hotspotPct <= 5 && !hasObstruction) {
+                    reportStatusDesc.innerHTML = `<span class="text-success fw-bold">⭐ Perfect Green Screen Quality!</span> No critical lighting issues or edge obstructions detected in this snapshot. The setup is ready for keying.`;
+                    
+                    // Show a summary card instead of warnings
+                    issueLightingContainer.style.display = 'block';
+                    issueLightingContainer.className = "issue-card bg-success bg-opacity-10 border-success";
+                    issueLightingContainer.querySelector('h4').textContent = "Excellent Lighting Uniformity";
+                    issueLightingContainer.querySelector('h4').className = "text-success fw-bold";
+                    issueLightingDesc.textContent = "The lighting is flat and uniform. There are zero significant hotspots or wrinkles. The camera framing is fully centered inside the green backdrop.";
+                } else {
+                    // Reset styling in case it was a perfect layout previously
+                    issueLightingContainer.className = "issue-card";
+                    issueLightingContainer.querySelector('h4').textContent = "1. Harsh, Uneven Lighting & Shadows";
+                    issueLightingContainer.querySelector('h4').className = "issue-title";
+                }
+            }
+        }
+
+        function renderCanvasView() {
+            if (!canvas || !originalImageData || !heatmapImageData) return;
+            const ctx = canvas.getContext('2d');
+            if (activeViewMode === 'overlay') {
+                ctx.putImageData(heatmapImageData, 0, 0);
+            } else {
+                ctx.putImageData(originalImageData, 0, 0);
+            }
+        }
+
+        // View Mode Event Toggles
+        btnShowOverlay.addEventListener('click', () => {
+            activeViewMode = 'overlay';
+            btnShowOverlay.classList.add('active');
+            btnShowOriginal.classList.remove('active');
+            renderCanvasView();
+        });
+
+        btnShowOriginal.addEventListener('click', () => {
+            activeViewMode = 'original';
+            btnShowOriginal.classList.add('active');
+            btnShowOverlay.classList.remove('active');
+            renderCanvasView();
+        });
+    </script>
+</body>
+</html>
