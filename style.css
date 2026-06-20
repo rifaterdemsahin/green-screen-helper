@@ -1,33 +1,175 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --bg-dark: #090d16;
+    --bg-card: #151c2c;
+    --border-color: #242f47;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --primary-neon: #10b981;
+    --primary-glow: rgba(16, 185, 129, 0.2);
+    --blue-neon: #0ea5e9;
+    --purple-neon: #a855f7;
+    --yellow-neon: #eab308;
+    --red-neon: #f43f5e;
+}
+
 body {
-    background-color: #212529; /* Bootstrap dark bg */
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+/* Glassmorphism Navbar */
+.navbar-custom {
+    background: rgba(9, 13, 22, 0.8) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.navbar-custom .navbar-brand {
+    font-size: 1.25rem;
+    color: var(--text-primary) !important;
+    transition: transform 0.2s ease;
+}
+
+.navbar-custom .navbar-brand:hover {
+    transform: scale(1.02);
+}
+
+.navbar-custom .nav-link {
+    color: var(--text-secondary) !important;
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 0.5rem 1rem !important;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.navbar-custom .nav-link:hover {
+    color: var(--primary-neon) !important;
+    background: rgba(16, 185, 129, 0.08);
+}
+
+.navbar-custom .nav-link.active {
+    color: var(--primary-neon) !important;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* Custom Cards & Sections */
+.card-custom {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-custom:hover {
+    border-color: rgba(16, 185, 129, 0.4);
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.08);
+    transform: translateY(-2px);
 }
 
 .video-container {
-    border: 2px solid #444;
-    border-radius: 8px;
-    overflow: hidden; /* Ensures canvas corners are rounded */
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    background: #000;
 }
 
 canvas {
-    pointer-events: none; /* Allows clicking through to the video */
+    pointer-events: none;
 }
 
-.control-group {
-    background-color: #343a40; /* Bootstrap secondary bg */
+.btn-custom-primary {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
 }
 
-#toggle-chroma-button.active {
-    background-color: #198754; /* Bootstrap success color */
-    border-color: #198754;
+.btn-custom-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
 }
 
-#golden-ratio-button.active {
-    background-color: #ffc107; /* Bootstrap warning color */
-    border-color: #ffc107;
-    color: #000;
+.btn-custom-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-weight: 500;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
 }
 
-.social-link svg {
-    width: 24px;
-    height: 24px;
+.btn-custom-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--text-secondary);
+}
+
+/* Footer Section */
+.footer-custom {
+    background-color: #05070c;
+    border-top: 1px solid var(--border-color);
+    padding: 3rem 0 1.5rem;
+    margin-top: auto;
+}
+
+.footer-custom a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-custom a:hover {
+    color: var(--primary-neon);
+}
+
+/* Interactive Simulator Elements */
+.room-wall {
+    stroke: var(--border-color);
+    stroke-width: 3;
+    fill: #0d131f;
+}
+
+.beam-path {
+    transition: opacity 0.3s ease;
+}
+
+.light-bulb {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.light-bulb:hover {
+    filter: drop-shadow(0px 0px 8px var(--yellow-neon));
+}
+
+.active-light {
+    filter: drop-shadow(0px 0px 12px var(--yellow-neon));
+}
+
+/* Switch Controls */
+.form-check-input:checked {
+    background-color: var(--primary-neon);
+    border-color: var(--primary-neon);
 }

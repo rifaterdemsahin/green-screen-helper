@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3-Light Setup Guide & Room Simulator | Green Screen Helper</title>
+    <meta name="description" content="An interactive 3D/2D room simulator showing you exactly where to place your key light, fill light, and backlight in a compact 2x4 meter room for optimal chroma keying.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .simulator-box {
+            background: #0d131f;
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        
+        .preview-box {
+            background: #1e293b;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .preview-subject {
+            width: 80px;
+            height: 120px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .preview-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #22c55e;
+            transition: background-color 0.3s ease;
+            z-index: 1;
+        }
+
+        .spill-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.4) 0%, rgba(34, 197, 94, 0) 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .light-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .badge-key { background-color: var(--yellow-neon); color: #000; }
+        .badge-fill { background-color: var(--blue-neon); color: #fff; }
+        .badge-rim { background-color: var(--purple-neon); color: #fff; }
+        
+        /* Coordinate Labels */
+        .coord-label {
+            font-size: 11px;
+            fill: var(--text-secondary);
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body class="bg-dark text-white">
+    <!-- Navigation Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                🟢 Green Screen Helper
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">🏠 Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="lighting.html">💡 Lighting Setup</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="calculator.html">🧮 Room Calculator</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="camera-focus-guide.html">🎯 Focus Guide</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="camera-guide.html">📷 Camera Guide</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="shooting-guide.html">🎬 Shooting Guide</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="text-center mb-5">
+            <h1 class="display-5 text-success-custom fw-bold mb-2">💡 Interactive Lighting Simulator</h1>
+            <p class="lead text-secondary">Visualize and calculate the ideal 3-light setup for a 2m × 4m room</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left Panel: Controls -->
+            <div class="col-lg-5 col-md-12">
+                <div class="card card-custom p-4 mb-4">
+                    <h3 class="mb-4 text-success">🔧 Setup Parameters</h3>
+                    
+                    <!-- Room Info Box -->
+                    <div class="p-3 mb-4 rounded bg-dark border border-secondary">
+                        <div class="row text-center">
+                            <div class="col-4 border-end border-secondary">
+                                <span class="d-block text-secondary small">Room Size</span>
+                                <strong class="text-white">2.0m × 4.0m</strong>
+                            </div>
+                            <div class="col-4 border-end border-secondary">
+                                <span class="d-block text-secondary small">Screen Place</span>
+                                <strong class="text-white">Entry (0.0m)</strong>
+                            </div>
+                            <div class="col-4">
+                                <span class="d-block text-secondary small">Camera Pos</span>
+                                <strong class="text-white" id="cam-dist-text">3.6m</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subject Distance Slider -->
+                    <div class="mb-4">
+                        <label for="subj-dist" class="form-label d-flex justify-content-between">
+                            <span>🚶 Subject Distance from Green Screen:</span>
+                            <span class="fw-bold text-success" id="subj-dist-val">1.6 meters</span>
+                        </label>
+                        <input type="range" class="form-range" id="subj-dist" min="0.5" max="3.0" step="0.1" value="1.6">
+                        <div class="d-flex justify-content-between text-muted small">
+                            <span>0.5m (Too close)</span>
+                            <span>3.0m (Too far)</span>
+                        </div>
+                    </div>
+
+                    <!-- Camera Position Slider -->
+                    <div class="mb-4">
+                        <label for="cam-dist" class="form-label d-flex justify-content-between">
+                            <span>📷 Camera Distance from Green Screen:</span>
+                            <span class="fw-bold text-info" id="cam-dist-val">3.6 meters</span>
+                        </label>
+                        <input type="range" class="form-range" id="cam-dist" min="2.5" max="4.0" step="0.1" value="3.6">
+                        <div class="d-flex justify-content-between text-muted small">
+                            <span>2.5m</span>
+                            <span>4.0m (End of Room)</span>
+                        </div>
+                    </div>
+
+                    <h4 class="mt-2 mb-3 text-white">💡 Light Switches</h4>
+                    
+                    <!-- Key Light Toggle -->
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" role="switch" id="toggle-key" checked>
+                        <label class="form-check-label d-flex justify-content-between w-100" for="toggle-key">
+                            <span>🔑 Key Light (Main Source)</span>
+                            <span class="light-badge badge-key">On</span>
+                        </label>
+                    </div>
+
+                    <!-- Fill Light Toggle -->
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" role="switch" id="toggle-fill" checked>
+                        <label class="form-check-label d-flex justify-content-between w-100" for="toggle-fill">
+                            <span>🌊 Fill Light (Softens Shadows)</span>
+                            <span class="light-badge badge-fill">On</span>
+                        </label>
+                    </div>
+
+                    <!-- Backlight Toggle -->
+                    <div class="form-check form-switch mb-4">
+                        <input class="form-check-input" type="checkbox" role="switch" id="toggle-rim" checked>
+                        <label class="form-check-label d-flex justify-content-between w-100" for="toggle-rim">
+                            <span>☀️ Backlight / Rim Light (Separation)</span>
+                            <span class="light-badge badge-rim">On</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Interactive Keying Preview -->
+                <div class="card card-custom p-4">
+                    <h3 class="mb-3 text-info">🎬 Live Keying Preview</h3>
+                    <p class="text-secondary small mb-3">Simulated visual outcome of your settings and lighting arrangement.</p>
+                    
+                    <div class="preview-box">
+                        <div class="preview-bg" id="preview-bg"></div>
+                        <div class="spill-overlay" id="spill-overlay"></div>
+                        
+                        <!-- Simulated Subject Silhouette -->
+                        <svg class="preview-subject" id="subject-silhouette" viewBox="0 0 100 150">
+                            <!-- Drop Shadow for subject -->
+                            <ellipse id="subj-shadow" cx="50" cy="140" rx="20" ry="6" fill="rgba(0,0,0,0.6)" opacity="0" />
+                            
+                            <!-- Person Body Path -->
+                            <path id="body-path" d="M 20 150 C 20 110, 30 90, 50 90 C 70 90, 80 110, 80 150 Z" fill="#334155" />
+                            <!-- Person Head -->
+                            <circle id="head-circle" cx="50" cy="55" r="22" fill="#334155" />
+                            
+                            <!-- Lighting Overlay Highlights -->
+                            <!-- Key Highlight (Left side) -->
+                            <path id="key-highlight" d="M 50 33 A 22 22 0 0 0 28 55 A 22 22 0 0 0 50 77 Z" fill="#fef08a" opacity="0.3" style="display: block; pointer-events: none;" />
+                            <!-- Fill Highlight (Right side) -->
+                            <path id="fill-highlight" d="M 50 33 A 22 22 0 0 1 72 55 A 22 22 0 0 1 50 77 Z" fill="#bae6fd" opacity="0.2" style="display: block; pointer-events: none;" />
+                            <!-- Rim Light Highlight (Back edge border) -->
+                            <circle id="rim-highlight" cx="50" cy="55" r="22" fill="none" stroke="#e9d5ff" stroke-width="3" opacity="0" style="pointer-events: none;" />
+                        </svg>
+                        
+                        <div class="position-absolute bottom-2 start-2 bg-dark bg-opacity-75 px-2 py-1 rounded small border border-secondary z-3" style="font-size: 11px;">
+                            Status: <span id="preview-status" class="text-success fw-bold">Perfect Setup</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Simulator Visualization -->
+            <div class="col-lg-7 col-md-12">
+                <div class="card card-custom p-4 h-100">
+                    <h3 class="mb-3 text-success">🗺️ Interactive 2D Floor Plan</h3>
+                    <p class="text-secondary small mb-4">Click and drag nodes or toggle switches to adjust placement. Grid lines represent 0.5-meter increments.</p>
+                    
+                    <div class="simulator-box d-flex justify-content-center">
+                        <!-- SVG Floor plan scale: 1m = 130px. Width = 2m (260px) + margins. Length = 4m (520px) + margins -->
+                        <svg width="340" height="580" viewBox="0 0 340 580" id="room-svg">
+                            <defs>
+                                <!-- Gradients for light cones -->
+                                <radialGradient id="key-beam" cx="50%" cy="100%" r="100%">
+                                    <stop offset="0%" stop-color="rgba(253, 224, 71, 0.4)" />
+                                    <stop offset="50%" stop-color="rgba(253, 224, 71, 0.15)" />
+                                    <stop offset="100%" stop-color="rgba(253, 224, 71, 0)" />
+                                </radialGradient>
+                                <radialGradient id="fill-beam" cx="50%" cy="100%" r="100%">
+                                    <stop offset="0%" stop-color="rgba(14, 165, 233, 0.35)" />
+                                    <stop offset="60%" stop-color="rgba(14, 165, 233, 0.1)" />
+                                    <stop offset="100%" stop-color="rgba(14, 165, 233, 0)" />
+                                </radialGradient>
+                                <radialGradient id="rim-beam" cx="50%" cy="0%" r="100%">
+                                    <stop offset="0%" stop-color="rgba(168, 85, 247, 0.4)" />
+                                    <stop offset="60%" stop-color="rgba(168, 85, 247, 0.15)" />
+                                    <stop offset="100%" stop-color="rgba(168, 85, 247, 0)" />
+                                </radialGradient>
+                                <!-- Shadow patterns -->
+                                <radialGradient id="shadow-gradient" cx="50%" cy="50%" r="50%">
+                                    <stop offset="0%" stop-color="rgba(0,0,0,0.8)" />
+                                    <stop offset="100%" stop-color="rgba(0,0,0,0)" />
+                                </radialGradient>
+                            </defs>
+
+                            <!-- Grid Lines (0.5m intervals = 65px) -->
+                            <!-- X lines -->
+                            <line x1="40" y1="30" x2="300" y2="30" stroke="#1e293b" stroke-width="1" />
+                            <line x1="40" y1="95" x2="300" y2="95" stroke="#1e293b" stroke-dasharray="2 4" />
+                            <line x1="40" y1="160" x2="300" y2="160" stroke="#1e293b" stroke-width="1" />
+                            <line x1="40" y1="225" x2="300" y2="225" stroke="#1e293b" stroke-dasharray="2 4" />
+                            <line x1="40" y1="290" x2="300" y2="290" stroke="#1e293b" stroke-width="1" />
+                            <line x1="40" y1="355" x2="300" y2="355" stroke="#1e293b" stroke-dasharray="2 4" />
+                            <line x1="40" y1="420" x2="300" y2="420" stroke="#1e293b" stroke-width="1" />
+                            <line x1="40" y1="485" x2="300" y2="485" stroke="#1e293b" stroke-dasharray="2 4" />
+                            <line x1="40" y1="550" x2="300" y2="550" stroke="#1e293b" stroke-width="1" />
+                            <!-- Y lines -->
+                            <line x1="40" y1="30" x2="40" y2="550" stroke="#1e293b" stroke-width="1" />
+                            <line x1="105" y1="30" x2="105" y2="550" stroke="#1e293b" stroke-dasharray="2 4" />
+                            <line x1="170" y1="30" x2="170" y2="550" stroke="#1e293b" stroke-width="1" />
+                            <line x1="235" y1="30" x2="235" y2="550" stroke="#1e293b" stroke-dasharray="2 4" />
+                            <line x1="300" y1="30" x2="300" y2="550" stroke="#1e293b" stroke-width="1" />
+
+                            <!-- Room Wall borders (2m wide, 4m deep) -->
+                            <rect x="40" y="30" width="260" height="520" fill="none" stroke="#475569" stroke-width="3" />
+                            
+                            <!-- Green Screen at Y = 30 (Entry 0m) -->
+                            <rect x="40" y="22" width="260" height="8" rx="2" fill="#22c55e" filter="drop-shadow(0px 0px 4px rgba(34,197,94,0.7))" />
+                            <text x="170" y="15" fill="#22c55e" font-size="12" font-weight="bold" text-anchor="middle">GREEN SCREEN (0.0m)</text>
+
+                            <!-- Light Beams Cones (Rendered below subjects) -->
+                            <!-- Key Light cone (placed around 2.4m, X=0.5m) -->
+                            <path id="key-beam-cone" d="M 105 442 L 50 170 L 290 170 Z" fill="url(#key-beam)" opacity="0.7" />
+                            <!-- Fill Light cone (placed around 2.4m, X=1.5m) -->
+                            <path id="fill-beam-cone" d="M 235 442 L 50 170 L 290 170 Z" fill="url(#fill-beam)" opacity="0.6" />
+                            <!-- Rim Light cone (placed around Y=0.8m, X=0.8m pointing down-right) -->
+                            <path id="rim-beam-cone" d="M 118 134 L 118 420 L 270 420 Z" fill="url(#rim-beam)" opacity="0.5" />
+
+                            <!-- Cast Shadow from subject onto Green Screen if too close -->
+                            <ellipse id="wall-shadow" cx="170" cy="30" rx="30" ry="12" fill="url(#shadow-gradient)" opacity="0" />
+
+                            <!-- Subject Node (Interactive Slider Controlled) -->
+                            <g id="subject-node" transform="translate(170, 238)">
+                                <circle cx="0" cy="0" r="18" fill="#3b82f6" stroke="#ffffff" stroke-width="2" />
+                                <text cx="0" cy="0" dy="4" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">SUBJ</text>
+                                <!-- Arrow pointer representing orientation facing camera -->
+                                <polygon points="0,22 -6,14 6,14" fill="#ffffff" />
+                            </g>
+
+                            <!-- Camera Node (Interactive Slider Controlled) -->
+                            <g id="camera-node" transform="translate(170, 498)">
+                                <rect x="-16" y="-12" width="32" height="24" rx="3" fill="#cbd5e1" stroke="#475569" stroke-width="2" />
+                                <circle cx="0" cy="-6" r="5" fill="#0f172a" />
+                                <polygon points="-8,-12 0,-24 8,-12" fill="#cbd5e1" />
+                                <text x="0" y="24" fill="#cbd5e1" font-size="11" font-weight="bold" text-anchor="middle">CAMERA</text>
+                            </g>
+
+                            <!-- Lights Icons (Static, but glow matching state) -->
+                            <!-- Key Light X=0.5m (105px), Y=2.4m (342px) -->
+                            <g id="svg-key-light" transform="translate(105, 442)">
+                                <circle cx="0" cy="0" r="14" fill="#0f172a" stroke="#fdba74" stroke-width="2" id="svg-key-circle" />
+                                <text x="0" y="4" fill="#fdba74" font-size="10" font-weight="bold" text-anchor="middle">KEY</text>
+                            </g>
+                            <!-- Fill Light X=1.5m (235px), Y=2.4m (342px) -->
+                            <g id="svg-fill-light" transform="translate(235, 442)">
+                                <circle cx="0" cy="0" r="14" fill="#0f172a" stroke="#bae6fd" stroke-width="2" id="svg-fill-circle" />
+                                <text x="0" y="4" fill="#bae6fd" font-size="10" font-weight="bold" text-anchor="middle">FILL</text>
+                            </g>
+                            <!-- Rim Light X=0.8m (142px), Y=0.8m (134px) -->
+                            <g id="svg-rim-light" transform="translate(118, 134)">
+                                <circle cx="0" cy="0" r="14" fill="#0f172a" stroke="#e9d5ff" stroke-width="2" id="svg-rim-circle" />
+                                <text x="0" y="4" fill="#e9d5ff" font-size="10" font-weight="bold" text-anchor="middle">RIM</text>
+                            </g>
+
+                            <!-- Coordinate rulers on left wall -->
+                            <text x="15" y="34" class="coord-label">0.0m</text>
+                            <text x="15" y="99" class="coord-label">0.5m</text>
+                            <text x="15" y="164" class="coord-label">1.0m</text>
+                            <text x="15" y="229" class="coord-label">1.5m</text>
+                            <text x="15" y="294" class="coord-label">2.0m</text>
+                            <text x="15" y="359" class="coord-label">2.5m</text>
+                            <text x="15" y="424" class="coord-label">3.0m</text>
+                            <text x="15" y="489" class="coord-label">3.5m</text>
+                            <text x="15" y="554" class="coord-label">4.0m</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Educational Section -->
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <div class="card card-custom p-4">
+                    <h2 class="text-success mb-4 text-center">📘 3-Light Green Screen Setup Theory</h2>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="p-3 bg-dark rounded h-100 border border-secondary">
+                                <h4 class="text-warning"><span class="badge-key light-badge me-2">KEY</span> Key Light</h4>
+                                <p class="text-secondary small mt-2">
+                                    The main illuminating source for your face/body. Set it at <strong>45 degrees</strong> relative to the camera axis and elevated about 45 degrees pointing down. This provides depth and shapes your features.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-dark rounded h-100 border border-secondary">
+                                <h4 class="text-info"><span class="badge-fill light-badge me-2">FILL</span> Fill Light</h4>
+                                <p class="text-secondary small mt-2">
+                                    Placed opposite the key light, usually at a lower intensity (e.g. 50% or 1:2 ratio). It prevents heavy shadows on the opposite side of your face. For small spaces, use a soft diffuser to avoid bouncing harsh light off side walls.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-dark rounded h-100 border border-secondary">
+                                <h4 class="text-purple"><span class="badge-rim light-badge me-2">RIM</span> Back/Rim Light</h4>
+                                <p class="text-secondary small mt-2">
+                                    Placed behind you, angled down at your shoulders and hair. It creates a subtle glowing border that separates you from the green background and neutralizes green light reflections (spill) landing on you.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Critical constraints and tips for 2mx4m -->
+                    <div class="alert alert-info mt-4 mb-0 bg-dark text-white border-secondary">
+                        <h4 class="alert-heading text-success">⚠️ Compact Room Rules (2.0m x 4.0m)</h4>
+                        <ul class="mb-0">
+                            <li><strong>Spill Hazard:</strong> Because the room length is only 4.0m, placing the camera at 3.6m and subject at 1.6m gives you <strong>1.6m separation</strong> from the green screen. This is the sweet spot. Moving closer than 1.2m causes the subject's key light to cast shadows on the screen, and green color will reflect onto the subject's shoulders.</li>
+                            <li><strong>Reflection Bouncing:</strong> The room is only 2 meters wide. Lights placed too close to side walls will bounce off the wall and ruin the camera angle coverage. Use flag shields or grid diffusers on key/fill lights.</li>
+                            <li><strong>Angle Calculation:</strong> With the camera at 3.6m and subject at 1.6m, the camera-to-subject distance is 2.0 meters. A standard focal length of 24mm to 35mm (full-frame equivalent) is ideal.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-custom">
+        <div class="container text-center">
+            <div class="support-buttons my-3">
+                <a href="https://www.linkedin.com/in/rifaterdemsahin/" target="_blank" class="btn btn-primary">🤝 Let's Connect</a>
+                <a href="https://buymeacoffee.com/rifaterdemsahin" target="_blank" class="btn btn-warning">☕ Buy Me a Coffee</a>
+            </div>
+            <div class="social-links my-3">
+                <a href="https://www.youtube.com/@RifatErdemSahin" target="_blank" class="social-link text-white mx-2">📺 YouTube</a>
+                <a href="https://www.linkedin.com/in/rifaterdemsahin/" target="_blank" class="social-link text-white mx-2">💼 LinkedIn</a>
+                <a href="https://github.com/rifaterdemsahin/" target="_blank" class="social-link text-white mx-2">💻 GitHub</a>
+                <a href="https://hello.rifaterdemsahin.com" target="_blank" class="social-link text-white mx-2">🌐 Website</a>
+            </div>
+            <p class="text-muted">Built with ❤️ by Rifat Erdem Sahin | 🤖 AI-powered green screen assistance | <a href="licenses.html" class="text-white">📜 Licenses</a></p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // State variables
+        const state = {
+            subjDist: 1.6, // from screen (0m)
+            camDist: 3.6, // from screen
+            keyOn: true,
+            fillOn: true,
+            rimOn: true
+        };
+
+        // DOM elements
+        const subjDistSlider = document.getElementById('subj-dist');
+        const subjDistVal = document.getElementById('subj-dist-val');
+        const camDistSlider = document.getElementById('cam-dist');
+        const camDistVal = document.getElementById('cam-dist-val');
+        const camDistText = document.getElementById('cam-dist-text');
+
+        const toggleKey = document.getElementById('toggle-key');
+        const toggleFill = document.getElementById('toggle-fill');
+        const toggleRim = document.getElementById('toggle-rim');
+
+        // Visual elements (SVG & HTML preview)
+        const keyBeamCone = document.getElementById('key-beam-cone');
+        const fillBeamCone = document.getElementById('fill-beam-cone');
+        const rimBeamCone = document.getElementById('rim-beam-cone');
+        const wallShadow = document.getElementById('wall-shadow');
+        
+        const svgKeyCircle = document.getElementById('svg-key-circle');
+        const svgFillCircle = document.getElementById('svg-fill-circle');
+        const svgRimCircle = document.getElementById('svg-rim-circle');
+
+        const subjectNode = document.getElementById('subject-node');
+        const cameraNode = document.getElementById('camera-node');
+
+        const previewBg = document.getElementById('preview-bg');
+        const spillOverlay = document.getElementById('spill-overlay');
+        const keyHighlight = document.getElementById('key-highlight');
+        const fillHighlight = document.getElementById('fill-highlight');
+        const rimHighlight = document.getElementById('rim-highlight');
+        const subjShadow = document.getElementById('subj-shadow');
+        const previewStatus = document.getElementById('preview-status');
+        const bodyPath = document.getElementById('body-path');
+        const headCircle = document.getElementById('head-circle');
+
+        // SVG Dimensions
+        const scale = 130; // 1 meter = 130 pixels
+        const yOffset = 30; // SVG top padding
+        const xCenter = 170; // SVG horizontal center
+
+        function updateSimulation() {
+            // Update values
+            subjDistVal.textContent = state.subjDist.toFixed(1) + ' meters';
+            camDistVal.textContent = state.camDist.toFixed(1) + ' meters';
+            camDistText.textContent = state.camDist.toFixed(1) + 'm';
+
+            // Calculate SVG coordinates
+            const subjY = yOffset + (state.subjDist * scale);
+            const camY = yOffset + (state.camDist * scale);
+
+            // Move SVG nodes
+            subjectNode.setAttribute('transform', `translate(${xCenter}, ${subjY})`);
+            cameraNode.setAttribute('transform', `translate(${xCenter}, ${camY})`);
+
+            // Handle Light beam cones matching subject position
+            // Key Light beam pointing from (105, 442) to subject
+            if (state.keyOn) {
+                keyBeamCone.style.opacity = '1';
+                keyBeamCone.setAttribute('d', `M 105 442 L ${xCenter - 30} ${subjY} L ${xCenter + 25} ${subjY} Z`);
+                svgKeyCircle.setAttribute('fill', '#fef08a');
+                keyHighlight.style.display = 'block';
+            } else {
+                keyBeamCone.style.opacity = '0';
+                svgKeyCircle.setAttribute('fill', '#0f172a');
+                keyHighlight.style.display = 'none';
+            }
+
+            // Fill Light beam pointing from (235, 442) to subject
+            if (state.fillOn) {
+                fillBeamCone.style.opacity = '1';
+                fillBeamCone.setAttribute('d', `M 235 442 L ${xCenter - 25} ${subjY} L ${xCenter + 30} ${subjY} Z`);
+                svgFillCircle.setAttribute('fill', '#bae6fd');
+                fillHighlight.style.display = 'block';
+            } else {
+                fillBeamCone.style.opacity = '0';
+                svgFillCircle.setAttribute('fill', '#0f172a');
+                fillHighlight.style.display = 'none';
+            }
+
+            // Rim Light beam pointing from (118, 134) to back of subject
+            if (state.rimOn) {
+                rimBeamCone.style.opacity = '1';
+                rimBeamCone.setAttribute('d', `M 118 134 L ${xCenter - 20} ${subjY - 10} L ${xCenter + 20} ${subjY - 10} Z`);
+                svgRimCircle.setAttribute('fill', '#e9d5ff');
+                rimHighlight.setAttribute('opacity', '0.85');
+            } else {
+                rimBeamCone.style.opacity = '0';
+                svgRimCircle.setAttribute('fill', '#0f172a');
+                rimHighlight.setAttribute('opacity', '0');
+            }
+
+            // Calculate Spill and Shadows based on Distance
+            // If subject is close to the screen, cast shadow on the screen
+            if (state.subjDist < 1.2 && (state.keyOn || state.fillOn)) {
+                // Shadow opacity is stronger the closer you get
+                const shadowStrength = (1.2 - state.subjDist) / 0.7;
+                wallShadow.setAttribute('opacity', Math.min(shadowStrength, 0.75));
+                subjShadow.setAttribute('opacity', Math.min(shadowStrength, 0.6));
+                
+                // Spill overlay simulation
+                spillOverlay.style.opacity = Math.min((1.2 - state.subjDist) * 0.8, 0.8);
+                
+                if (state.rimOn) {
+                    previewStatus.textContent = "Shadow on Green Screen!";
+                    previewStatus.className = "text-warning fw-bold";
+                } else {
+                    previewStatus.textContent = "Shadow & Green Spill!";
+                    previewStatus.className = "text-danger fw-bold";
+                }
+            } else {
+                wallShadow.setAttribute('opacity', '0');
+                subjShadow.setAttribute('opacity', '0');
+                spillOverlay.style.opacity = '0';
+                
+                if (!state.keyOn && !state.fillOn) {
+                    previewStatus.textContent = "Subject Underexposed";
+                    previewStatus.className = "text-danger fw-bold";
+                } else if (!state.rimOn) {
+                    previewStatus.textContent = "Green Spill Hazard";
+                    previewStatus.className = "text-warning fw-bold";
+                } else {
+                    previewStatus.textContent = "Perfect Setup";
+                    previewStatus.className = "text-success fw-bold";
+                }
+            }
+
+            // Simulate lighting effects on the preview body and head elements
+            let r = 51, g = 65, b = 85; // Default dark slate-grey color (#334155)
+            if (state.keyOn) { r += 40; g += 30; }
+            if (state.fillOn) { r += 20; g += 20; b += 40; }
+            bodyPath.setAttribute('fill', `rgb(${Math.min(r, 255)}, ${Math.min(g, 255)}, ${Math.min(b, 255)})`);
+            headCircle.setAttribute('fill', `rgb(${Math.min(r, 255)}, ${Math.min(g, 255)}, ${Math.min(b, 255)})`);
+        }
+
+        // Add event listeners
+        subjDistSlider.addEventListener('input', (e) => {
+            state.subjDist = parseFloat(e.target.value);
+            // Cap subject distance so it cannot surpass the camera
+            if (state.subjDist >= state.camDist - 0.5) {
+                state.subjDist = state.camDist - 0.5;
+                subjDistSlider.value = state.subjDist;
+            }
+            updateSimulation();
+        });
+
+        camDistSlider.addEventListener('input', (e) => {
+            state.camDist = parseFloat(e.target.value);
+            // Make sure camera doesn't run over the subject
+            if (state.camDist <= state.subjDist + 0.5) {
+                state.camDist = state.subjDist + 0.5;
+                camDistSlider.value = state.camDist;
+            }
+            updateSimulation();
+        });
+
+        toggleKey.addEventListener('change', (e) => {
+            state.keyOn = e.target.checked;
+            document.querySelector('.badge-key').textContent = state.keyOn ? 'On' : 'Off';
+            updateSimulation();
+        });
+
+        toggleFill.addEventListener('change', (e) => {
+            state.fillOn = e.target.checked;
+            document.querySelector('.badge-fill').textContent = state.fillOn ? 'On' : 'Off';
+            updateSimulation();
+        });
+
+        toggleRim.addEventListener('change', (e) => {
+            state.rimOn = e.target.checked;
+            document.querySelector('.badge-rim').textContent = state.rimOn ? 'On' : 'Off';
+            updateSimulation();
+        });
+
+        // Initialize simulation
+        updateSimulation();
+    </script>
+</body>
+</html>
