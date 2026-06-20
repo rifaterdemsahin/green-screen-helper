@@ -174,7 +174,7 @@
                         <div id="upload-placeholder" class="text-center p-4">
                             <span class="fs-1 d-block mb-2">📸</span>
                             <span class="d-block fw-semibold mb-1">Drag & drop your photo here</span>
-                            <span class="text-secondary small d-block mb-3">Or click below to browse files</span>
+                            <span class="text-secondary small d-block mb-3">Or paste from clipboard (Cmd+V / Ctrl+V)</span>
                             <input class="form-control bg-dark text-white border-secondary" type="file" id="image-upload" accept="image/*" style="max-width: 250px; margin: 0 auto;">
                         </div>
                         <canvas id="analysis-canvas"></canvas>
@@ -352,6 +352,23 @@
         let heatmapImageData = null; // Store computed heatmap pixels
         let originalImageData = null; // Store computed original pixels
         let activeViewMode = 'overlay'; // 'overlay' or 'original'
+        let issueMarkers = []; // Dynamic markers pointing to problem locations
+
+        // Global Paste Event Listener
+        window.addEventListener('paste', (e) => {
+            const items = e.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const blob = items[i].getAsFile();
+                    handleImageFile(blob);
+                    
+                    // Provide visual feedback for pasting
+                    reportTypeBadge.textContent = "Clipboard Image Pasted";
+                    reportTypeBadge.className = "badge bg-info px-3 py-2 fw-semibold";
+                    break;
+                }
+            }
+        });
 
         // Drag & Drop event bindings
         ['dragenter', 'dragover'].forEach(eventName => {
@@ -439,6 +456,22 @@
 
             let trTotal = 0, rTotal = 0, lTotal = 0, tTotal = 0;
 
+            // Reset dynamic issue location markers
+            issueMarkers = [];
+
+            // Initialize 10x10 grids for spatial clustering of bad points
+            const cols = 10;
+            const rows = 10;
+            const grid = Array.from({ length: cols }, () => 
+                Array.from({ length: rows }, () => ({
+                    shadowCount: 0,
+                    hotspotCount: 0,
+                    pixelCount: 0,
+                    sumX: 0,
+                    sumY: 0
+                }))
+            );
+
             for (let y = 0; y < height; y++) {
                 for (let x = 0; x < width; x++) {
                     const idx = (y * width + x) * 4;
@@ -492,6 +525,14 @@
                         if (!isGreen) topEdgeObstruction++;
                     }
 
+                    // Determine grid cell index to plot coordinates
+                    const cellX = Math.floor(x / (width / cols));
+                    const cellY = Math.floor(y / (height / rows));
+                    const clampedCX = Math.max(0, Math.min(cols - 1, cellX));
+                    const clampedCY = Math.max(0, Math.min(rows - 1, cellY));
+                    const cell = grid[clampedCX][clampedCY];
+                    cell.pixelCount++;
+
                     if (isGreen) {
                         totalGreenPixels++;
                         greenBrightnesses.push(l * 100);
@@ -502,12 +543,20 @@
                             data[idx] = 14;
                             data[idx+1] = 165;
                             data[idx+2] = 233;
+
+                            cell.shadowCount++;
+                            cell.sumX += x;
+                            cell.sumY += y;
                         } else if (l > 0.82 || s < 0.25) {
                             hotspotsCount++;
                             // Red overlay highlight
                             data[idx] = 244;
                             data[idx+1] = 63;
                             data[idx+2] = 94;
+
+                            cell.hotspotCount++;
+                            cell.sumX += x;
+                            cell.sumY += y;
                         } else {
                             goodGreenCount++;
                             // Green wash overlay
@@ -515,6 +564,38 @@
                             data[idx+1] = Math.round(g * 1.3);
                             data[idx+2] = Math.round(b * 0.4);
                         }
+                    }
+                }
+            }
+
+            // Evaluate grid cells for cluster markers
+            for (let cx = 0; cx < cols; cx++) {
+                for (let cy = 0; cy < rows; cy++) {
+                    const cell = grid[cx][cy];
+                    if (cell.pixelCount === 0) continue;
+                    
+                    // Highlight sections where shadows/creases exceed 18% of the cell
+                    if (cell.shadowCount / cell.pixelCount > 0.18) {
+                        const avgX = cell.sumX / cell.shadowCount;
+                        const avgY = cell.sumY / cell.shadowCount;
+                        issueMarkers.push({
+                            x: avgX,
+                            y: avgY,
+                            type: 'shadow',
+                            label: 'Shadow / Crease'
+                        });
+                    }
+
+                    // Highlight sections where hotspots exceed 18% of the cell
+                    if (cell.hotspotCount / cell.pixelCount > 0.18) {
+                        const avgX = cell.sumX / cell.hotspotCount;
+                        const avgY = cell.sumY / cell.hotspotCount;
+                        issueMarkers.push({
+                            x: avgX,
+                            y: avgY,
+                            type: 'hotspot',
+                            label: 'Hotspot / Bright'
+                        });
                     }
                 }
             }
@@ -551,9 +632,26 @@
                 const isLBlocked = lTotal > 0 && (leftEdgeObstruction / lTotal) > 0.25;
                 const isTBlocked = tTotal > 0 && (topEdgeObstruction / tTotal) > 0.25;
 
+                // Add corner/edge obstruction markers
+                if (isTrBlocked) {
+                    issueMarkers.push({ x: width * 0.9, y: height * 0.1, type: 'obstruction', label: 'Top-Right Clamp' });
+                }
+                if (isRBlocked) {
+                    issueMarkers.push({ x: width * 0.97, y: height * 0.5, type: 'obstruction', label: 'Right Stand' });
+                }
+                if (isLBlocked) {
+                    issueMarkers.push({ x: width * 0.03, y: height * 0.5, type: 'obstruction', label: 'Left Stand' });
+                }
+                if (isTBlocked) {
+                    issueMarkers.push({ x: width * 0.5, y: height * 0.03, type: 'obstruction', label: 'Top Crossbar' });
+                }
+
                 const hasObstruction = isTrBlocked || isRBlocked || isLBlocked || isTBlocked;
                 statEdges.textContent = hasObstruction ? "Yes" : "No";
                 statEdges.className = hasObstruction ? "stat-value text-danger" : "stat-value text-success";
+
+                // Regenerate markers for edges if they exist
+                renderCanvasView();
 
                 // Generate real-time reports matching the user specifications
                 reportTypeBadge.textContent = "Live Image Scan Complete";
@@ -616,6 +714,79 @@
             }
         }
 
+        function drawDiagnosticMarkers(ctx) {
+            if (!issueMarkers || issueMarkers.length === 0) return;
+            
+            issueMarkers.forEach(marker => {
+                let color = '#22c55e'; // default green
+                if (marker.type === 'shadow') {
+                    color = '#0ea5e9'; // Blue shadow color
+                } else if (marker.type === 'hotspot') {
+                    color = '#f43f5e'; // Red hotspot color
+                } else if (marker.type === 'obstruction') {
+                    color = '#eab308'; // Yellow obstruction color
+                }
+
+                // Draw outer glowing circle
+                ctx.beginPath();
+                ctx.arc(marker.x, marker.y, 16, 0, 2 * Math.PI);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2.5;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 8;
+                ctx.stroke();
+
+                // Reset shadow blur
+                ctx.shadowBlur = 0;
+
+                // Draw center pulse circle
+                ctx.beginPath();
+                ctx.arc(marker.x, marker.y, 4, 0, 2 * Math.PI);
+                ctx.fillStyle = color;
+                ctx.fill();
+
+                // Draw connecting dashed line down to badge label
+                ctx.beginPath();
+                ctx.setLineDash([2, 2]);
+                ctx.moveTo(marker.x, marker.y + 4);
+                ctx.lineTo(marker.x, marker.y + 16);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                ctx.setLineDash([]); // clear dash
+
+                // Draw Label Pill
+                ctx.font = 'bold 9px monospace';
+                const labelText = `⚠ ${marker.label}`;
+                const textWidth = ctx.measureText(labelText).width;
+                const rectW = textWidth + 10;
+                const rectH = 14;
+                const rectX = marker.x - rectW / 2;
+                const rectY = marker.y + 16;
+
+                // Round rect background
+                ctx.fillStyle = 'rgba(9, 13, 22, 0.9)';
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1;
+                
+                // Draw rounded background
+                ctx.beginPath();
+                if (ctx.roundRect) {
+                    ctx.roundRect(rectX, rectY, rectW, rectH, 3);
+                } else {
+                    ctx.rect(rectX, rectY, rectW, rectH);
+                }
+                ctx.fill();
+                ctx.stroke();
+
+                // Text
+                ctx.fillStyle = color;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(labelText, marker.x, rectY + rectH / 2 + 1);
+            });
+        }
+
         function renderCanvasView() {
             if (!canvas || !originalImageData || !heatmapImageData) return;
             const ctx = canvas.getContext('2d');
@@ -624,6 +795,8 @@
             } else {
                 ctx.putImageData(originalImageData, 0, 0);
             }
+            // Render vector warning crosshairs on both screens
+            drawDiagnosticMarkers(ctx);
         }
 
         // View Mode Event Toggles
